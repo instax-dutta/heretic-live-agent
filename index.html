@@ -3,13 +3,82 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#111311" />
-    <meta name="description" content="Live download intelligence for Heretic models on Hugging Face." />
-    <title>Heretic / Download intelligence</title>
+    <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large" />
+    <meta name="description" content="Explore public Heretic model reach on Hugging Face with live download totals, recent activity, model counts, and creator lookup." />
+    <link rel="canonical" href="https://heretic.sdad.pro/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Heretic Live" />
+    <meta property="og:url" content="https://heretic.sdad.pro/" />
+    <meta property="og:title" content="Heretic Live | Public model reach on Hugging Face" />
+    <meta property="og:description" content="Live download intelligence for public Heretic models, with global reach totals and creator-level lookup." />
+    <meta property="og:image" content="https://heretic.sdad.pro/og-image.svg" />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Heretic Live public model index for Hugging Face" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Heretic Live | Public model reach on Hugging Face" />
+    <meta name="twitter:description" content="Live download intelligence for public Heretic models, with global reach totals and creator-level lookup." />
+    <meta name="twitter:image" content="https://heretic.sdad.pro/og-image.svg" />
+    <meta name="twitter:image:alt" content="Heretic Live public model index for Hugging Face" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://heretic.sdad.pro/#website",
+            "url": "https://heretic.sdad.pro/",
+            "name": "Heretic Live",
+            "description": "Public observability interface for the Heretic model ecosystem on Hugging Face.",
+            "inLanguage": "en"
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://heretic.sdad.pro/#application",
+            "url": "https://heretic.sdad.pro/",
+            "name": "Heretic Live",
+            "description": "Explore public Heretic model reach on Hugging Face with download intelligence and creator lookup.",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Web Browser",
+            "browserRequirements": "Requires JavaScript for live totals and creator lookup",
+            "isPartOf": { "@id": "https://heretic.sdad.pro/#website" }
+          }
+        ]
+      }
+    </script>
+    <title>Heretic Live | Public model reach on Hugging Face</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <main class="shell initial-content">
+        <nav class="topbar" aria-label="Primary navigation">
+          <a class="brand" href="/" aria-label="Heretic Live home">
+            <span class="brand-mark" aria-hidden="true">H</span>
+            <span>HERETIC<span class="slash">/</span>LIVE</span>
+          </a>
+          <a class="hub-link" href="https://huggingface.co/models?search=heretic" rel="noreferrer">Browse Hugging Face <span aria-hidden="true">↗</span></a>
+        </nav>
+        <section class="hero" aria-labelledby="page-title">
+          <div class="eyebrow">PUBLIC MODEL INDEX</div>
+          <h1 id="page-title">How far is <em>Heretic</em> spreading?</h1>
+          <p class="lede">Explore public Heretic model reach on Hugging Face. Enable JavaScript to load live totals, recent activity, and creator-level results.</p>
+        </section>
+        <section class="method-section" aria-labelledby="method-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="method-title">How the index works</h2>
+              <p>Repositories are discovered through the Heretic tag and model names, then deduplicated by repository ID.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

@@ -1,0 +1,30 @@
+# Heretic Live
+
+> Public observability interface for the Heretic model ecosystem on Hugging Face.
+
+Heretic Live aggregates public Hugging Face model metadata into a global reach index and provides creator-level model lookup without authentication.
+
+## Key URLs
+
+- [Homepage](https://heretic.sdad.pro/): Global model reach index and creator lookup.
+- [API endpoint](https://heretic.sdad.pro/api/stats): Public JSON endpoint used by the application.
+- [Hugging Face Heretic models](https://huggingface.co/models?search=heretic): Upstream public model search.
+- [Methodology reference](https://github.com/p-e-w/heretic/issues/450): Public Heretic methodology discussion.
+
+## Data methodology
+
+The API searches for repositories carrying the `heretic` tag and repositories whose model names contain `heretic`. It follows Hugging Face cursor pagination, merges both result sets, deduplicates repository IDs, and ranks creator results by lifetime downloads.
+
+## Data fields
+
+- `allTimeDownloads`: Combined lifetime downloads for indexed models.
+- `last30DaysDownloads`: Recent download activity returned by Hugging Face.
+- `modelCount`: Number of unique indexed repositories.
+- Creator results include model ID, Hugging Face URL, lifetime downloads, and recent downloads.
+
+## Limitations
+
+- Data is public metadata only.
+- No authentication or private repository access is supported.
+- The upstream API can be temporarily unavailable; the application exposes degraded-data handling and a published fallback snapshot.
+- The homepage is an interactive client-rendered interface; the API endpoint provides the machine-readable data surface.

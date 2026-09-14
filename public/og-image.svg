@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Heretic Live</title>
+  <desc id="desc">Public model reach on Hugging Face.</desc>
+  <rect width="1200" height="630" fill="#111311"/>
+  <path d="M0 0h1200v630H0z" fill="url(#grid)" opacity=".16"/>
+  <rect x="72" y="68" width="52" height="52" rx="8" fill="#c3ed72"/>
+  <path d="M87 80h9v12h14V80h9v28h-9V99H96v9h-9z" fill="#17200f"/>
+  <text x="148" y="102" fill="#f0f1eb" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" letter-spacing="3">HERETIC<tspan fill="#c3ed72">/</tspan>LIVE</text>
+  <text x="72" y="238" fill="#c3ed72" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="5">PUBLIC MODEL INDEX</text>
+  <text x="72" y="326" fill="#f0f1eb" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="700" letter-spacing="-3">How far is</text>
+  <text x="72" y="414" fill="#c3ed72" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="700" letter-spacing="-3">Heretic spreading?</text>
+  <text x="76" y="505" fill="#a1a99d" font-family="Arial, Helvetica, sans-serif" font-size="22">Live download intelligence for public Heretic models on Hugging Face.</text>
+  <rect x="980" y="68" width="148" height="34" rx="4" fill="#202420" stroke="#4e574c"/>
+  <circle cx="1000" cy="85" r="5" fill="#c3ed72"/>
+  <text x="1016" y="91" fill="#c3ed72" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="2">LIVE DATA</text>
+  <defs>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#a1a99d" stroke-width="1"/>
+    </pattern>
+  </defs>
+</svg>
