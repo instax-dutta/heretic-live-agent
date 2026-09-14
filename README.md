@@ -124,9 +124,10 @@ The site includes a lightweight crawlability and social-sharing layer:
 - `public/sitemap.xml` exposes the canonical homepage URL.
 - `public/llms.txt` summarizes the product, data methodology, API, and limitations for AI systems.
 - `index.html` includes canonical, Open Graph, Twitter card, and JSON-LD metadata.
-- `public/og-image.svg` provides the branded 1200×630 social preview asset.
+- `public/og-image.png` provides the compatible 1200×630 raster social preview asset.
+- `public/og-image.svg` is the editable source artwork for the PNG preview.
 
-The OG image uses the existing Heretic Live visual system as a dependency-free SVG fallback. The requested Antigravity CLI was not available in the build environment, so no Antigravity-generated asset is claimed.
+The social metadata points to the PNG because Discord, WhatsApp, and some other link unfurlers do not reliably render SVG Open Graph images. The image uses the existing Heretic Live visual system as a dependency-free fallback. The requested Antigravity CLI was not available in the build environment, so no Antigravity-generated asset is claimed.
 
 ## Repository hygiene
 
