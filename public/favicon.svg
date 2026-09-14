@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Heretic Live</title>
+  <rect width="64" height="64" rx="12" fill="#111311"/>
+  <path d="M17 13h9v15h12V13h9v38h-9V36H26v15h-9z" fill="#c3ed72"/>
+  <path d="M47 13h5v8h-5z" fill="#f0a36c"/>
+</svg>

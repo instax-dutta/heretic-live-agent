@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Vite 7.1.7, vanilla JavaScript, native CSS, and a Vercel serverless function.
+Vite 7.3.6, vanilla JavaScript, native CSS, and a Vercel serverless function.
 
 ## Users
 
@@ -31,7 +31,7 @@ The application reads public Hugging Face Hub metadata through a Vercel serverle
 - Global all-time downloads, recent 30-day downloads, and model count.
 - Creator lookup by Hugging Face username.
 - Ranked creator model results with lifetime and recent download signals.
-- Tag-plus-name discovery, deduplication, and a degraded-data state.
+- Tag-plus-name discovery, cursor pagination, deduplication, and a degraded-data state.
 - Public metadata only; no authentication or private repository access.
 - The current implementation is a single-page Vite application with one global view and one dynamic creator view.
 
@@ -45,7 +45,8 @@ The application reads public Hugging Face Hub metadata through a Vercel serverle
 ## Evidence on Hand
 
 - Existing UI and interaction implementation in `index.html`, `src/main.js`, and `src/style.css`.
-- Public-data aggregation and creator lookup behavior in `api/stats.js`.
+- Public-data aggregation and creator lookup behavior in `api/stats.js` and `api/stats-core.js`.
+- Native regression coverage in `test/`.
 - Methodology reference: https://github.com/p-e-w/heretic/issues/450
 - No customer testimonials, paid claims, or private usage data are available.
 

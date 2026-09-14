@@ -1,53 +1,40 @@
+import { aggregate, collectModels, fetchAllModels, withModelExpansions } from "./stats-core.js";
+import { isValidUsername, normalizeUsername } from "../shared/username.js";
+
 const HF_API = "https://huggingface.co/api/models";
 const FETCH_TIMEOUT_MS = 25000;
+const MAX_PAGES = 100;
 
-function normalize(value) {
-  return String(value || "").trim().replace(/^@/, "");
-}
-
-function isHereticModel(model) {
-  const id = String(model?.id || "").toLowerCase();
-  const tags = Array.isArray(model?.tags) ? model.tags.map((tag) => String(tag).toLowerCase()) : [];
-  return tags.includes("heretic") || id.includes("heretic");
-}
-
-function toModel(model, source) {
-  return {
-    id: model.id,
-    url: `https://huggingface.co/${model.id}`,
-    downloads: Number(model.downloads || 0),
-    downloadsAllTime: Number(model.downloadsAllTime ?? model.downloads_all_time ?? 0),
-    likes: Number(model.likes || 0),
-    source,
-  };
+function getNextLink(response) {
+  const link = response.headers.get("link") || "";
+  const match = link.match(/<([^>]+)>;\s*rel=["']next["']/i);
+  return match?.[1] || null;
 }
 
 async function getModels(params) {
-  const url = new URL(HF_API);
-  Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
-  url.searchParams.append("expand[]", "downloads");
-  url.searchParams.append("expand[]", "downloadsAllTime");
-  url.searchParams.append("expand[]", "tags");
-  const response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
-  if (!response.ok) throw new Error(`Hugging Face returned ${response.status}`);
-  const data = await response.json();
-  return Array.isArray(data) ? data : [];
-}
+  return fetchAllModels(async (pageParams) => {
+    const url = typeof pageParams === "string" ? withModelExpansions(pageParams) : new URL(HF_API);
+    if (typeof pageParams !== "string") {
+      Object.entries(pageParams).forEach(([key, value]) => url.searchParams.set(key, value));
+      url.searchParams.append("expand[]", "downloads");
+      url.searchParams.append("expand[]", "downloadsAllTime");
+      url.searchParams.append("expand[]", "tags");
+    }
 
-function aggregate(models) {
-  return models.reduce((totals, model) => ({
-    modelCount: totals.modelCount + 1,
-    allTimeDownloads: totals.allTimeDownloads + model.downloadsAllTime,
-    last30DaysDownloads: totals.last30DaysDownloads + model.downloads,
-  }), { modelCount: 0, allTimeDownloads: 0, last30DaysDownloads: 0 });
+    const response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    if (!response.ok) throw new Error(`Hugging Face returned ${response.status}`);
+    const data = await response.json();
+    if (!Array.isArray(data)) throw new Error("Hugging Face returned an invalid model list.");
+    return { models: data, next: getNextLink(response) };
+  }, params, { maxPages: MAX_PAGES });
 }
 
 export default async function handler(request, response) {
   response.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
   response.setHeader("Access-Control-Allow-Origin", "*");
 
-  const username = normalize(request.query?.username);
-  if (username && !/^[a-zA-Z0-9._-]{1,96}$/.test(username)) {
+  const username = normalizeUsername(request.query?.username);
+  if (username && !isValidUsername(username)) {
     return response.status(400).json({ error: "Enter a valid Hugging Face username." });
   }
 
@@ -58,17 +45,7 @@ export default async function handler(request, response) {
       getModels({ ...common, search: "heretic", ...(username ? { author: username } : {}) }),
     ]);
 
-    const models = new Map();
-    tagged.forEach((model) => {
-      if (!username || isHereticModel(model)) models.set(model.id, toModel(model, "tagged"));
-    });
-    named.forEach((model) => {
-      if (!models.has(model.id) && (!username || isHereticModel(model))) {
-        models.set(model.id, toModel(model, "named"));
-      }
-    });
-
-    const list = [...models.values()].sort((a, b) => b.downloadsAllTime - a.downloadsAllTime);
+    const list = collectModels(tagged, named, { filterHeretic: Boolean(username) });
     return response.status(200).json({
       ok: true,
       scope: username ? "user" : "global",
@@ -86,4 +63,3 @@ export default async function handler(request, response) {
     });
   }
 }
-

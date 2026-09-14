@@ -1,3 +1,5 @@
+import { createRequestGate } from "../api/stats-core.js";
+import { isValidUsername, normalizeUsername } from "../shared/username.js";
 import "./style.css";
 
 const app = document.querySelector("#app");
@@ -5,6 +7,7 @@ const nf = new Intl.NumberFormat("en-US");
 
 const fallback = { modelCount: 7509, allTimeDownloads: 64904090, last30DaysDownloads: 14438920 };
 let state = { scope: "global", loading: true, error: "", data: null, lastUpdated: null, validation: "" };
+const requestGate = createRequestGate();
 
 function format(value) {
   return nf.format(Number(value || 0));
@@ -180,6 +183,7 @@ function renderUser(models, username, maxDownloads) {
 }
 
 async function fetchStats(username) {
+  const requestId = requestGate.start();
   state = { ...state, loading: true, error: "", validation: "", scope: username ? "user" : "global" };
   render();
 
@@ -187,8 +191,10 @@ async function fetchStats(username) {
     const response = await fetch(`/api/stats${username ? `?username=${encodeURIComponent(username)}` : ""}`);
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Request failed");
+    if (!requestGate.isCurrent(requestId)) return;
     state = { ...state, loading: false, data, lastUpdated: data.updatedAt };
   } catch (error) {
+    if (!requestGate.isCurrent(requestId)) return;
     state = { ...state, loading: false, error: error.message, data: { totals: fallback, username, models: [] }, lastUpdated: null };
   }
   render();
@@ -196,9 +202,10 @@ async function fetchStats(username) {
 
 async function handleLookup(event) {
   event.preventDefault();
-  const value = new FormData(event.currentTarget).get("username").trim().replace(/^@/, "");
+  const value = normalizeUsername(new FormData(event.currentTarget).get("username"));
   if (!value) return fetchStats();
-  if (!/^[a-zA-Z0-9._-]{1,96}$/.test(value)) {
+  if (!isValidUsername(value)) {
+    requestGate.start();
     state = { ...state, validation: "Use a valid Hugging Face username." };
     render();
     document.querySelector("#username")?.focus();
