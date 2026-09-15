@@ -30,7 +30,7 @@ async function getModels(params) {
 }
 
 export default async function handler(request, response) {
-  response.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
+  response.setHeader("Cache-Control", "s-maxage=43200, stale-while-revalidate=600");
   response.setHeader("Access-Control-Allow-Origin", "*");
 
   const username = normalizeUsername(request.query?.username);

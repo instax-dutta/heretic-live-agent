@@ -71,7 +71,7 @@ function render() {
             <h2 id="reach-title">Current reach</h2>
             <p>Aggregated across every indexed public repository.</p>
           </div>
-          <span class="refresh-note">Refreshes every 5 minutes</span>
+          <span class="refresh-note">Refreshes every 12 hours</span>
         </div>
         <div class="stats-grid">
           <article class="stat-card primary-stat">

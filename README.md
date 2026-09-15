@@ -81,7 +81,7 @@ GET /api/stats?username=<hugging-face-username>
 
 Usernames may contain letters, numbers, periods, underscores, and hyphens, with a maximum length of 96 characters. The API returns public metadata only and does not access private repositories or require credentials.
 
-The API sets a five-minute shared cache with stale-while-revalidate behavior. If Hugging Face is unavailable, it returns an explicit degraded-data response while the frontend displays its published fallback snapshot.
+The API sets a 12-hour shared cache with stale-while-revalidate behavior. If Hugging Face is unavailable, it returns an explicit degraded-data response while the frontend displays its published fallback snapshot.
 
 ## Verification
 
