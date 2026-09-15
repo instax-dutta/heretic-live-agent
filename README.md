@@ -81,7 +81,7 @@ GET /api/stats?username=<hugging-face-username>
 
 Usernames may contain letters, numbers, periods, underscores, and hyphens, with a maximum length of 96 characters. The API returns public metadata only and does not access private repositories or require credentials.
 
-The API sets a 12-hour shared cache with stale-while-revalidate behavior. If Hugging Face is unavailable, it returns an explicit degraded-data response while the frontend displays its published fallback snapshot.
+The API sets a 12-hour shared cache with stale-while-revalidate behavior. It supports cross-origin browser requests, returns CORS headers on normal and error responses, and answers `OPTIONS` preflight requests with `204 No Content`. If Hugging Face is unavailable, it returns an explicit degraded-data response while the frontend displays its published fallback snapshot.
 
 ## Verification
 
@@ -96,7 +96,7 @@ node --check api/stats-core.js
 npm audit --audit-level=high
 ```
 
-The tests cover pagination, expansion parameters, deduplication, ranking, aggregate totals, username validation, and stale-request protection.
+The tests cover pagination, expansion parameters, deduplication, ranking, aggregate totals, username validation, stale-request protection, cache policy, and CORS preflight behavior.
 
 ## Deployment to Vercel
 

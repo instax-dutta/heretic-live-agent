@@ -32,6 +32,14 @@ async function getModels(params) {
 export default async function handler(request, response) {
   response.setHeader("Cache-Control", "s-maxage=43200, stale-while-revalidate=600");
   response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  response.setHeader("Access-Control-Max-Age", "86400");
+
+  if (request.method === "OPTIONS") {
+    response.setHeader("Cache-Control", "no-store");
+    return response.status(204).end();
+  }
 
   const username = normalizeUsername(request.query?.username);
   if (username && !isValidUsername(username)) {

@@ -9,6 +9,10 @@
     "test": "node --test",
     "preview": "vite preview --host 0.0.0.0"
   },
+  "allowScripts": {
+    "esbuild": true,
+    "fsevents": true
+  },
   "devDependencies": {
     "vite": "^7.3.6"
   }
