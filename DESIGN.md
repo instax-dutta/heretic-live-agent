@@ -117,7 +117,7 @@ No shadows anywhere — depth is conveyed by paper tone steps (newsprint → sof
 
 ## Shapes
 
-Sharp print edges throughout: zero border radius on every surface, box, and control. The only circle in the system is the 8px live dot. Rules do the shaping: 3px double rules open major sections, 1.5px strokes box the inquiry form and stamps, 1px hairlines divide ledger rows. Stamps (status markers) sit rotated −1.2deg like a struck mark.
+Sharp print edges throughout: zero border radius on every surface, box, and control. The only circles in the system are the 8px live dot and the button icon medallions. Rules do the shaping: 3px double rules open major sections, 1.5px strokes box the inquiry form and stamps, 1px hairlines divide ledger rows. Major vessels are double-bezel mounted plates: a 1px outer shell with 8–10px padding holding a bordered inner core (figure plate, inquiry box). Stamps (status markers) sit rotated −1.2deg like a struck mark.
 
 ## Components
 
@@ -129,9 +129,10 @@ Label | tabular figure | right-aligned serif-italic note, divided by hairlines. 
 
 ### Buttons
 - **Shape:** square corners, no radius.
-- **Primary:** ink ground, paper text, 12px tracked uppercase; min-height 50px.
-- **Hover:** ground shifts to live red. **Focus:** 2px live-red outline offset 3px.
+- **Primary:** ink ground, paper text, 12px tracked uppercase; min-height 50px. The trailing arrow always sits in its own 34px circular medallion, flush to the button's right padding — never naked beside the text.
+- **Hover:** ground shifts to live red; the medallion drifts diagonally and swells slightly. **Press:** the whole button scales to 0.98. **Focus:** 2px live-red outline offset 3px. All motion on a single premium easing curve.
 - **Text buttons:** transparent, deep-red, underlined with 3px offset.
+- **Motion:** sections arrive on a heavy 0.9s fade-up via IntersectionObserver (transform + opacity only, 70ms stagger); nothing animates under `prefers-reduced-motion`.
 
 ### Inquiry field
 1.5px ink box on paper; mono @ sigil in live red; border shifts to live red on focus-within; caret in live red; placeholder in faint ink.

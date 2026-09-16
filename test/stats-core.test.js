@@ -7,8 +7,20 @@ import {
   estimateDownloadsPerSecond,
   estimateLiveTotal,
   fetchAllModels,
+  sampleDownloadEvents,
   withModelExpansions,
 } from "../api/stats-core.js";
+
+function mulberry32(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 test("fetchAllModels follows the Hub next-page URL and preserves all models", async () => {
   const pages = [
@@ -88,4 +100,35 @@ test("estimateLiveTotal counts forward from the snapshot total", () => {
   assert.equal(estimateLiveTotal(1000, 2592000, 0), 1000);
   assert.equal(estimateLiveTotal(1000, 2592000, -10), 1000);
   assert.equal(estimateLiveTotal(1000, 0, 60), 1000);
+});
+
+test("sampleDownloadEvents returns nothing for empty rates or intervals", () => {
+  assert.equal(sampleDownloadEvents(0, 1), 0);
+  assert.equal(sampleDownloadEvents(5.57, 0), 0);
+  assert.equal(sampleDownloadEvents(-2, 1), 0);
+  assert.equal(sampleDownloadEvents(5.57, -1), 0);
+});
+
+test("sampleDownloadEvents emits whole downloads averaging the 30-day rate", () => {
+  const random = mulberry32(42);
+  const draws = Array.from({ length: 2000 }, () => sampleDownloadEvents(5.57, 1, random));
+
+  assert.ok(draws.every((n) => Number.isInteger(n) && n >= 0));
+  assert.ok(new Set(draws).size > 3);
+  const mean = draws.reduce((a, b) => a + b, 0) / draws.length;
+  assert.ok(Math.abs(mean - 5.57) < 0.3, `mean ${mean} drifts from 5.57`);
+});
+
+test("sampleDownloadEvents stays near the mean for large rates", () => {
+  const random = mulberry32(7);
+  const draws = Array.from({ length: 500 }, () => sampleDownloadEvents(200, 1, random));
+  const mean = draws.reduce((a, b) => a + b, 0) / draws.length;
+  assert.ok(draws.every((n) => Number.isInteger(n) && n >= 0));
+  assert.ok(Math.abs(mean - 200) < 10, `mean ${mean} drifts from 200`);
+});
+
+test("sampleDownloadEvents is reproducible with the same seed", () => {
+  const first = Array.from({ length: 20 }, () => sampleDownloadEvents(5.57, 1, mulberry32(99)));
+  const second = Array.from({ length: 20 }, () => sampleDownloadEvents(5.57, 1, mulberry32(99)));
+  assert.deepEqual(first, second);
 });

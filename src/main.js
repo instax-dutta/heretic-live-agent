@@ -1,4 +1,5 @@
-import { createRequestGate, estimateDownloadsPerSecond, estimateLiveTotal } from "../api/stats-core.js";
+import Lenis from "lenis";
+import { createRequestGate, estimateDownloadsPerSecond, sampleDownloadEvents } from "../api/stats-core.js";
 import { isValidUsername, normalizeUsername } from "../shared/username.js";
 import "./style.css";
 
@@ -38,7 +39,11 @@ function timeAgo(value) {
 
 function formatRate(rate) {
   if (!Number.isFinite(rate) || rate < 0.1) return "";
-  return rate >= 10 ? String(Math.round(rate)) : rate.toFixed(1);
+  // Whole downloads only: the pace is a count of events per second, and a
+  // fractional "download" does not exist. Sub-1 rates keep one decimal so
+  // quiet creator views still read honestly instead of rounding to zero.
+  if (rate < 1) return rate.toFixed(1);
+  return String(Math.max(1, Math.round(rate)));
 }
 
 function stopLiveTicker() {
@@ -63,10 +68,12 @@ function startLiveTicker(totals) {
   }
   // Anchor the estimate at render time: the API total is a point-in-time
   // snapshot (refreshed every 12h), so we count forward from display time.
+  // Each tick draws whole-download arrivals from the 30-day mean rate, so the
+  // figure jumps the way real traffic does instead of creeping fractionally.
   liveBase = {
     total: Number(totals.allTimeDownloads || 0),
-    last30DaysDownloads: Number(totals.last30DaysDownloads || 0),
-    startedAt: Date.now(),
+    rate: estimateDownloadsPerSecond(totals?.last30DaysDownloads),
+    lastTick: Date.now(),
   };
   if (typeof setInterval !== "function") return;
   tracePoints = [liveBase.total];
@@ -77,10 +84,12 @@ function startLiveTicker(totals) {
       stopLiveTicker();
       return;
     }
-    const elapsedSeconds = (Date.now() - liveBase.startedAt) / 1000;
-    const current = estimateLiveTotal(liveBase.total, liveBase.last30DaysDownloads, elapsedSeconds);
-    el.textContent = format(current);
-    tracePoints.push(current);
+    const now = Date.now();
+    const elapsedSeconds = (now - liveBase.lastTick) / 1000;
+    liveBase.lastTick = now;
+    liveBase.total += sampleDownloadEvents(liveBase.rate, elapsedSeconds);
+    el.textContent = format(liveBase.total);
+    tracePoints.push(liveBase.total);
     if (tracePoints.length > TRACE_MAX_POINTS) tracePoints.shift();
     drawTrace();
   }, 1000);
@@ -125,7 +134,7 @@ function drawTrace() {
   const span = Math.max(1, max - min);
   // Parametric raise: the ink weight follows the download pace, so a faster
   // ecosystem literally draws a heavier line.
-  const pace = liveBase ? estimateDownloadsPerSecond(liveBase.last30DaysDownloads) : 0;
+  const pace = liveBase ? Number(liveBase.rate || 0) : 0;
   const pad = 6;
   const xStep = tracePoints.length > 1 ? (width - pad * 2) / (TRACE_MAX_POINTS - 1) : 0;
   const x0 = width - pad - xStep * (tracePoints.length - 1);
@@ -151,6 +160,26 @@ function drawTrace() {
 if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
   window.addEventListener("resize", drawTrace);
 }
+
+function initSmoothScroll() {
+  if (typeof window === "undefined") return null;
+  try {
+    if (typeof window.matchMedia === "function"
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return null;
+    }
+  } catch {
+    // If matchMedia throws, fall through and still enhance.
+  }
+  return new Lenis({
+    autoRaf: true,
+    lerp: 0.1,
+    smoothWheel: true,
+    smoothTouch: false,
+  });
+}
+
+initSmoothScroll();
 
 function render() {
   const totals = state.data?.totals || fallback;
@@ -185,50 +214,54 @@ function render() {
         </div>
       </section>
 
-      <figure class="figure" aria-labelledby="fig-caption">
+      <figure class="figure reveal" aria-labelledby="fig-caption">
         <figcaption id="fig-caption"><span>Fig. 1 — Cumulative public downloads, tag-plus-name index</span><span>Aggregated across every indexed public repository</span></figcaption>
         <div class="plate">
-          <div class="plate-label">All-time downloads</div>
-          <p class="live-total" id="live-total" aria-live="off" aria-atomic="false">${format(totals.allTimeDownloads)}</p>
-          <canvas id="live-trace" aria-hidden="true"></canvas>
-          <div class="pace-line"><span class="live-dot" aria-hidden="true"></span>${liveRateLabel ? `<span><strong>+~${liveRateLabel}/sec</strong> · 30-day pace, inked live</span>` : `<span>Pace unavailable for this view</span>`}</div>
-          <div class="plate-foot">Combined downloads across ${format(totals.modelCount)} models</div>
+          <div class="plate-core">
+            <div class="plate-label">All-time downloads</div>
+            <p class="live-total" id="live-total" aria-live="off" aria-atomic="false">${format(totals.allTimeDownloads)}</p>
+            <canvas id="live-trace" aria-hidden="true"></canvas>
+            <div class="pace-line"><span class="live-dot" aria-hidden="true"></span>${liveRateLabel ? `<span><strong>+~${liveRateLabel}/sec</strong> · 30-day pace, inked live</span>` : `<span>Pace unavailable for this view</span>`}</div>
+            <div class="plate-foot">Combined downloads across ${format(totals.modelCount)} models</div>
+          </div>
         </div>
       </figure>
 
       <ul class="ledger" aria-label="Recent activity and index size">
-        <li>
+        <li class="reveal">
           <span class="ledger-label">Last 30 days</span>
           <span class="ledger-value">${format(totals.last30DaysDownloads)}</span>
           <span class="ledger-note">${recentShare}% of lifetime volume is recent</span>
         </li>
-        <li>
+        <li class="reveal">
           <span class="ledger-label">Models tracked</span>
           <span class="ledger-value">${format(totals.modelCount)}</span>
           <span class="ledger-note">Tag and name discovery, deduplicated</span>
         </li>
       </ul>
 
-      <section class="inquiry" aria-labelledby="lookup-title">
-        <div class="inquiry-copy">
-          <h2 id="lookup-title">Inspect a creator</h2>
-          <p>Enter a Hugging Face username to rank their public Heretic models by reach.</p>
-        </div>
-        <form id="lookup-form" class="lookup-form" novalidate>
-          <label for="username">Hugging Face username</label>
-          <div class="input-row">
-            <span class="at" aria-hidden="true">@</span>
-            <input id="username" name="username" placeholder="username" value="${escapeHtml(isUser ? username : "")}" autocomplete="off" spellcheck="false" aria-describedby="lookup-help lookup-error" />
-            <button type="submit" ${state.loading && isUser ? "disabled" : ""}>
-              ${state.loading && isUser ? "Loading" : "Inspect profile"}<span aria-hidden="true">→</span>
-            </button>
+      <section class="inquiry reveal" aria-labelledby="lookup-title">
+        <div class="inquiry-core">
+          <div class="inquiry-copy">
+            <h2 id="lookup-title">Inspect a creator</h2>
+            <p>Enter a Hugging Face username to rank their public Heretic models by reach.</p>
           </div>
-          <div id="lookup-help" class="form-help">Leave blank to return to the global index.</div>
-          <div id="lookup-error" class="form-error" role="alert">${escapeHtml(state.validation)}</div>
-        </form>
+          <form id="lookup-form" class="lookup-form" novalidate>
+            <label for="username">Hugging Face username</label>
+            <div class="input-row">
+              <span class="at" aria-hidden="true">@</span>
+              <input id="username" name="username" placeholder="username" value="${escapeHtml(isUser ? username : "")}" autocomplete="off" spellcheck="false" aria-describedby="lookup-help lookup-error" />
+              <button type="submit" ${state.loading && isUser ? "disabled" : ""}>
+                ${state.loading && isUser ? "Loading" : "Inspect profile"}<span class="btn-icon" aria-hidden="true">→</span>
+              </button>
+            </div>
+            <div id="lookup-help" class="form-help">Leave blank to return to the global index.</div>
+            <div id="lookup-error" class="form-error" role="alert">${escapeHtml(state.validation)}</div>
+          </form>
+        </div>
       </section>
 
-      ${state.error ? `<div class="correction" role="status"><strong>Correction — live refresh unavailable.</strong> The latest published snapshot is still shown. <button id="retry" type="button">Retry connection</button></div>` : ""}
+      ${state.error ? `<div class="correction reveal" role="status"><strong>Correction — live refresh unavailable.</strong> The latest published snapshot is still shown. <button id="retry" type="button">Retry connection</button></div>` : ""}
       ${isUser && state.loading ? renderLoading(username) : ""}
       ${isUser && !state.loading && state.data ? renderUser(models, username, maxDownloads) : renderMethod()}
 
@@ -243,10 +276,43 @@ function render() {
   document.querySelector("#retry")?.addEventListener("click", () => fetchStats(state.scope === "user" ? username : undefined));
   document.querySelector("#clear")?.addEventListener("click", () => fetchStats());
   startLiveTicker(totals);
+  revealOnScroll();
+}
+
+let scrollObserver = null;
+
+function revealOnScroll() {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+  let reduceMotion = false;
+  try {
+    reduceMotion = typeof window.matchMedia === "function"
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    reduceMotion = false;
+  }
+  const pending = [...document.querySelectorAll(".reveal:not(.in)")];
+  if (reduceMotion || typeof IntersectionObserver !== "function") {
+    pending.forEach((el) => el.classList.add("in"));
+    return;
+  }
+  pending.forEach((el, i) => {
+    el.style.transitionDelay = `${Math.min(i, 6) * 70}ms`;
+  });
+  if (!scrollObserver) {
+    scrollObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in");
+          scrollObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+  }
+  pending.forEach((el) => scrollObserver.observe(el));
 }
 
 function renderMethod() {
-  return `<section class="methods-note" aria-labelledby="method-title">
+  return `<section class="methods-note reveal" aria-labelledby="method-title">
     <div class="section-head">
       <h2 id="method-title">How the index works</h2>
       <p>The count favors coverage over a narrow snapshot of popular repositories.</p>
@@ -281,7 +347,7 @@ function renderUser(models, username, maxDownloads) {
     </section>`;
   }
 
-  return `<section class="results" aria-labelledby="results-title">
+  return `<section class="results reveal" aria-labelledby="results-title">
     <div class="result-head">
       <div><h2 id="results-title">${models.length} model${models.length === 1 ? "" : "s"} for @${escapeHtml(username)}</h2><p>Ranked by lifetime downloads. Recent activity is shown at right.</p></div>
       <span class="profile-stamp">Public profile</span>
