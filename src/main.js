@@ -51,8 +51,13 @@ function stopLiveTicker() {
     clearInterval(liveTickerId);
     liveTickerId = null;
   }
+  if (rafId !== null && typeof cancelAnimationFrame === "function") {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
   liveBase = null;
   tracePoints = [];
+  lastTraceFrame = 0;
 }
 
 function startLiveTicker(totals) {
@@ -77,10 +82,12 @@ function startLiveTicker(totals) {
   };
   if (typeof setInterval !== "function") return;
   tracePoints = [liveBase.total];
-  drawTrace();
+  displayedTotal = liveBase.total;
+  lastShownTotal = -1;
+  lastTraceFrame = 0;
+  drawTrace(displayedTotal);
   liveTickerId = setInterval(() => {
-    const el = document.querySelector("#live-total");
-    if (!el || !liveBase) {
+    if (!liveBase) {
       stopLiveTicker();
       return;
     }
@@ -88,21 +95,57 @@ function startLiveTicker(totals) {
     const elapsedSeconds = (now - liveBase.lastTick) / 1000;
     liveBase.lastTick = now;
     liveBase.total += sampleDownloadEvents(liveBase.rate, elapsedSeconds);
-    el.textContent = format(liveBase.total);
     tracePoints.push(liveBase.total);
     if (tracePoints.length > TRACE_MAX_POINTS) tracePoints.shift();
-    drawTrace();
   }, 1000);
+  if (typeof requestAnimationFrame === "function") {
+    rafId = requestAnimationFrame(traceLoop);
+  }
+}
+
+let rafId = null;
+let displayedTotal = 0;
+let lastShownTotal = -1;
+let lastTraceFrame = 0;
+
+function traceLoop(now) {
+  rafId = null;
+  if (!liveBase) return;
+  // Ease the visible head toward the true total: arrivals land discretely
+  // each second, but the pointer glides there instead of jumping.
+  const dt = Math.min(0.1, lastTraceFrame ? (now - lastTraceFrame) / 1000 : 0.016);
+  lastTraceFrame = now;
+  const gap = liveBase.total - displayedTotal;
+  if (Math.abs(gap) < 0.02) displayedTotal = liveBase.total;
+  else displayedTotal += gap * Math.min(1, dt * 3.5);
+  const el = document.querySelector("#live-total");
+  if (!el) {
+    stopLiveTicker();
+    return;
+  }
+  const shown = Math.floor(displayedTotal);
+  if (shown !== lastShownTotal) {
+    el.textContent = format(shown);
+    lastShownTotal = shown;
+  }
+  drawTrace(displayedTotal);
+  if (liveBase && typeof requestAnimationFrame === "function") {
+    rafId = requestAnimationFrame(traceLoop);
+  }
 }
 
 let tracePoints = [];
 const TRACE_MAX_POINTS = 120;
 
-function drawTrace() {
+function drawTrace(headValue) {
   if (typeof document === "undefined") return;
   if (!liveBase) return;
   const canvas = document.querySelector("#live-trace");
   if (!canvas || tracePoints.length === 0) return;
+  // The head glides every frame while history stays per-tick: append the live
+  // head as the final point so the pointer never steps.
+  const head = Number.isFinite(headValue) ? headValue : tracePoints[tracePoints.length - 1];
+  const points = [...tracePoints, head];
   const dpr = Math.min(2, (typeof window !== "undefined" && window.devicePixelRatio) || 1);
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
@@ -129,20 +172,18 @@ function drawTrace() {
     ctx.lineTo(width, y);
     ctx.stroke();
   }
-  const min = tracePoints[0];
-  const max = tracePoints[tracePoints.length - 1];
+  const min = points[0];
+  const max = points[points.length - 1];
   const span = Math.max(1, max - min);
-  // Parametric raise: the ink weight follows the download pace, so a faster
-  // ecosystem literally draws a heavier line.
   const pace = liveBase ? Number(liveBase.rate || 0) : 0;
   const pad = 6;
-  const xStep = tracePoints.length > 1 ? (width - pad * 2) / (TRACE_MAX_POINTS - 1) : 0;
-  const x0 = width - pad - xStep * (tracePoints.length - 1);
+  const xStep = points.length > 1 ? (width - pad * 2) / (TRACE_MAX_POINTS - 1) : 0;
+  const x0 = width - pad - xStep * (points.length - 1);
   ctx.strokeStyle = accent;
   ctx.lineWidth = 1.5 + Math.min(2, pace / 5);
   ctx.lineJoin = "round";
   ctx.beginPath();
-  tracePoints.forEach((point, i) => {
+  points.forEach((point, i) => {
     const x = x0 + xStep * i;
     const y = height - pad - ((point - min) / span) * (height - pad * 2);
     if (i === 0) ctx.moveTo(x, y);
