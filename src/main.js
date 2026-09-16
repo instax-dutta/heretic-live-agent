@@ -1,5 +1,6 @@
 import Lenis from "lenis";
 import { createRequestGate, estimateDownloadsPerSecond, sampleDownloadEvents } from "../api/stats-core.js";
+import { getFigureLabels } from "../shared/figure.js";
 import { isValidUsername, normalizeUsername } from "../shared/username.js";
 import "./style.css";
 
@@ -120,6 +121,7 @@ function render() {
     : 0;
   const liveRate = estimateDownloadsPerSecond(totals.last30DaysDownloads);
   const liveRateLabel = formatRate(liveRate);
+  const figure = getFigureLabels({ isUser, username: escapeHtml(username), formattedModelCount: format(totals.modelCount) });
 
   app.innerHTML = `
     <main class="shell">
@@ -143,13 +145,13 @@ function render() {
       </section>
 
       <figure class="figure reveal" aria-labelledby="fig-caption">
-        <figcaption id="fig-caption"><span>Fig. 1 — Cumulative public downloads, tag-plus-name index</span><span>Aggregated across every indexed public repository</span></figcaption>
+        <figcaption id="fig-caption"><span>${figure.captionLeft}</span><span>${figure.captionRight}</span></figcaption>
         <div class="plate">
           <div class="plate-core">
             <div class="plate-label">All-time downloads</div>
             <p class="live-total" id="live-total" aria-live="off" aria-atomic="false">${format(totals.allTimeDownloads)}</p>
             <div class="pace-line"><span class="live-dot" aria-hidden="true"></span>${liveRateLabel ? `<span><strong>+~${liveRateLabel}/sec</strong> · 30-day pace</span>` : `<span>Pace unavailable for this view</span>`}</div>
-            <div class="plate-foot">Combined downloads across ${format(totals.modelCount)} models</div>
+            <div class="plate-foot">${figure.plateFoot}</div>
           </div>
         </div>
       </figure>
@@ -276,7 +278,7 @@ function renderUser(models, username, maxDownloads) {
 
   return `<section class="results reveal" aria-labelledby="results-title">
     <div class="result-head">
-      <div><h2 id="results-title">${models.length} model${models.length === 1 ? "" : "s"} for @${escapeHtml(username)}</h2><p>Ranked by lifetime downloads. Recent activity is shown at right.</p></div>
+      <div><h2 id="results-title">${models.length} model${models.length === 1 ? "" : "s"} for @${escapeHtml(username)}</h2><p>Ranked by lifetime downloads. Recent activity is shown at right.</p><button class="text-button return-link" id="clear" type="button">Return to global index</button></div>
       <span class="profile-stamp">Public profile</span>
     </div>
     <div class="model-list" role="list" aria-label="Heretic models by lifetime downloads">

@@ -455,6 +455,8 @@ input { caret-color: var(--accent); }
   font-size: 13px;
   line-height: 1.55;
 }
+.return-link { display: inline-block; margin: 12px 0 0; font-size: 12px; }
+.result-head .text-button { margin-left: 0; }
 .profile-stamp {
   flex: 0 0 auto;
   padding: 6px 10px;
