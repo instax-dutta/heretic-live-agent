@@ -628,6 +628,9 @@ input { caret-color: var(--accent); }
 }
 
 @media (max-width: 600px) {
+  :root { --page-inset: 24px; }
+  .plate { padding: 8px; }
+  .plate-core { padding-left: 18px; padding-right: 18px; }
   .nameplate { font-size: clamp(26px, 7vw, 34px); }
   .dateline { font-size: 10px; }
   .input-row { display: grid; grid-template-columns: 34px minmax(0, 1fr); min-height: 0; }
@@ -656,7 +659,10 @@ input { caret-color: var(--accent); }
 }
 
 @media (max-width: 400px) {
+  :root { --page-inset: 20px; }
+  .plate { padding: 6px; }
+  .plate-core { min-width: 0; padding: 20px 16px 18px; }
   .front h1 { font-size: clamp(36px, 12vw, 48px); }
-  .live-total { font-size: clamp(44px, 15vw, 64px); }
+  .live-total { min-width: 0; max-width: 100%; font-size: clamp(34px, 11.5vw, 56px); white-space: nowrap; letter-spacing: -.04em; }
   .section-head h2, .inquiry-copy h2, .result-head h2, .empty-copy h2 { font-size: 26px; }
 }
