@@ -47,6 +47,7 @@ function stopLiveTicker() {
     liveTickerId = null;
   }
   liveBase = null;
+  tracePoints = [];
 }
 
 function startLiveTicker(totals) {
@@ -68,6 +69,8 @@ function startLiveTicker(totals) {
     startedAt: Date.now(),
   };
   if (typeof setInterval !== "function") return;
+  tracePoints = [liveBase.total];
+  drawTrace();
   liveTickerId = setInterval(() => {
     const el = document.querySelector("#live-total");
     if (!el || !liveBase) {
@@ -75,8 +78,78 @@ function startLiveTicker(totals) {
       return;
     }
     const elapsedSeconds = (Date.now() - liveBase.startedAt) / 1000;
-    el.textContent = format(estimateLiveTotal(liveBase.total, liveBase.last30DaysDownloads, elapsedSeconds));
+    const current = estimateLiveTotal(liveBase.total, liveBase.last30DaysDownloads, elapsedSeconds);
+    el.textContent = format(current);
+    tracePoints.push(current);
+    if (tracePoints.length > TRACE_MAX_POINTS) tracePoints.shift();
+    drawTrace();
   }, 1000);
+}
+
+let tracePoints = [];
+const TRACE_MAX_POINTS = 120;
+
+function drawTrace() {
+  if (typeof document === "undefined") return;
+  if (!liveBase) return;
+  const canvas = document.querySelector("#live-trace");
+  if (!canvas || tracePoints.length === 0) return;
+  const dpr = Math.min(2, (typeof window !== "undefined" && window.devicePixelRatio) || 1);
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  if (!width || !height) return;
+  const pixelWidth = Math.round(width * dpr);
+  const pixelHeight = Math.round(height * dpr);
+  if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+    canvas.width = pixelWidth;
+    canvas.height = pixelHeight;
+  }
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+  const styles = typeof getComputedStyle === "function" ? getComputedStyle(canvas) : null;
+  const accent = styles ? styles.getPropertyValue("--accent").trim() || "#b2341c" : "#b2341c";
+  const grid = "rgba(246, 241, 231, 0.14)";
+  ctx.strokeStyle = grid;
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 4; i += 1) {
+    const y = Math.round((height / 4) * i) + 0.5;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
+  const min = tracePoints[0];
+  const max = tracePoints[tracePoints.length - 1];
+  const span = Math.max(1, max - min);
+  // Parametric raise: the ink weight follows the download pace, so a faster
+  // ecosystem literally draws a heavier line.
+  const pace = liveBase ? estimateDownloadsPerSecond(liveBase.last30DaysDownloads) : 0;
+  const pad = 6;
+  const xStep = tracePoints.length > 1 ? (width - pad * 2) / (TRACE_MAX_POINTS - 1) : 0;
+  const x0 = width - pad - xStep * (tracePoints.length - 1);
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 1.5 + Math.min(2, pace / 5);
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  tracePoints.forEach((point, i) => {
+    const x = x0 + xStep * i;
+    const y = height - pad - ((point - min) / span) * (height - pad * 2);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  const lastX = width - pad;
+  const lastY = height - pad - ((max - min) / span) * (height - pad * 2);
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+  window.addEventListener("resize", drawTrace);
 }
 
 function render() {
@@ -93,56 +166,51 @@ function render() {
 
   app.innerHTML = `
     <main class="shell">
-      <nav class="topbar" aria-label="Primary navigation">
-        <a class="brand" href="/" aria-label="Heretic Live home">
-          <span class="brand-mark" aria-hidden="true">H</span>
-          <span>HERETIC<span class="slash">/</span>LIVE</span>
-        </a>
-        <a class="hub-link" href="https://huggingface.co/models?search=heretic" target="_blank" rel="noreferrer">
-          Browse Hugging Face <span aria-hidden="true">↗</span>
-        </a>
-      </nav>
+      <header class="masthead">
+        <div class="dateline">
+          <span>Public model index — Hugging Face Hub API</span>
+          <a class="hub-link" href="https://huggingface.co/models?search=heretic" target="_blank" rel="noreferrer">
+            Browse Hugging Face <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+        <a class="nameplate" href="/" aria-label="Heretic Live home">Heretic <span aria-hidden="true">/</span> Live</a>
+      </header>
 
-      <section class="hero" aria-labelledby="page-title">
-        <div class="eyebrow">PUBLIC MODEL INDEX</div>
+      <section class="front" aria-labelledby="page-title">
         <h1 id="page-title">How far is <em>Heretic</em> spreading?</h1>
-        <p class="lede">A live read on public Heretic models on Hugging Face, counted by tag and name so the long tail remains visible.</p>
-        <div class="source-line">
-          <span class="status-pill ${state.error ? "warn" : "ok"}">${state.error ? "DEGRADED DATA" : "LIVE DATA"}</span>
-          <span>Hugging Face Hub API</span>
-          <span class="source-refresh">Updated ${timeAgo(state.lastUpdated)}</span>
+        <p class="standfirst">A live read on public Heretic models on Hugging Face, counted by tag and name so the long tail remains visible.</p>
+        <div class="press-line">
+          <span class="stamp ${state.error ? "warn" : "live"}">${state.error ? "Degraded data" : "Live data"}</span>
+          <span>Updated ${timeAgo(state.lastUpdated)} · Refreshes every 12 hours</span>
         </div>
       </section>
 
-      <section class="data-section" aria-labelledby="reach-title">
-        <div class="section-heading">
-          <div>
-            <h2 id="reach-title">Current reach</h2>
-            <p>Aggregated across every indexed public repository.</p>
-          </div>
-          <span class="refresh-note">Refreshes every 12 hours</span>
+      <figure class="figure" aria-labelledby="fig-caption">
+        <figcaption id="fig-caption"><span>Fig. 1 — Cumulative public downloads, tag-plus-name index</span><span>Aggregated across every indexed public repository</span></figcaption>
+        <div class="plate">
+          <div class="plate-label">All-time downloads</div>
+          <p class="live-total" id="live-total" aria-live="off" aria-atomic="false">${format(totals.allTimeDownloads)}</p>
+          <canvas id="live-trace" aria-hidden="true"></canvas>
+          <div class="pace-line"><span class="live-dot" aria-hidden="true"></span>${liveRateLabel ? `<span><strong>+~${liveRateLabel}/sec</strong> · 30-day pace, inked live</span>` : `<span>Pace unavailable for this view</span>`}</div>
+          <div class="plate-foot">Combined downloads across ${format(totals.modelCount)} models</div>
         </div>
-        <div class="stats-grid">
-          <article class="stat-card primary-stat">
-            <div class="stat-label">ALL-TIME DOWNLOADS</div>
-            <div class="stat-value" id="live-total" aria-live="off" aria-atomic="false">${format(totals.allTimeDownloads)}</div>
-            <div class="stat-foot">Combined downloads across ${format(totals.modelCount)} models${liveRateLabel ? ` <span class="live-rate"><span class="live-dot" aria-hidden="true"></span>+~${liveRateLabel}/sec live estimate</span>` : ""}</div>
-          </article>
-          <article class="stat-card">
-            <div class="stat-label">LAST 30 DAYS</div>
-            <div class="stat-value">${format(totals.last30DaysDownloads)}</div>
-            <div class="stat-foot">${recentShare}% of lifetime volume is recent</div>
-          </article>
-          <article class="stat-card">
-            <div class="stat-label">MODELS TRACKED</div>
-            <div class="stat-value">${format(totals.modelCount)}</div>
-            <div class="stat-foot">Tag and name discovery, deduplicated</div>
-          </article>
-        </div>
-      </section>
+      </figure>
 
-      <section class="lookup-panel" aria-labelledby="lookup-title">
-        <div class="lookup-copy">
+      <ul class="ledger" aria-label="Recent activity and index size">
+        <li>
+          <span class="ledger-label">Last 30 days</span>
+          <span class="ledger-value">${format(totals.last30DaysDownloads)}</span>
+          <span class="ledger-note">${recentShare}% of lifetime volume is recent</span>
+        </li>
+        <li>
+          <span class="ledger-label">Models tracked</span>
+          <span class="ledger-value">${format(totals.modelCount)}</span>
+          <span class="ledger-note">Tag and name discovery, deduplicated</span>
+        </li>
+      </ul>
+
+      <section class="inquiry" aria-labelledby="lookup-title">
+        <div class="inquiry-copy">
           <h2 id="lookup-title">Inspect a creator</h2>
           <p>Enter a Hugging Face username to rank their public Heretic models by reach.</p>
         </div>
@@ -160,12 +228,12 @@ function render() {
         </form>
       </section>
 
-      ${state.error ? `<div class="notice error" role="status"><strong>Live refresh unavailable.</strong> The latest published snapshot is still shown. <button id="retry" type="button">Retry connection</button></div>` : ""}
+      ${state.error ? `<div class="correction" role="status"><strong>Correction — live refresh unavailable.</strong> The latest published snapshot is still shown. <button id="retry" type="button">Retry connection</button></div>` : ""}
       ${isUser && state.loading ? renderLoading(username) : ""}
       ${isUser && !state.loading && state.data ? renderUser(models, username, maxDownloads) : renderMethod()}
 
-      <footer>
-        <span>HERETIC / LIVE</span>
+      <footer class="imprint">
+        <span>Heretic / Live</span>
         <span>Public metadata only. No login required.</span>
         <a href="https://github.com/p-e-w/heretic/issues/450" target="_blank" rel="noreferrer">Read the methodology ↗</a>
       </footer>
@@ -178,28 +246,26 @@ function render() {
 }
 
 function renderMethod() {
-  return `<section class="method-section" aria-labelledby="method-title">
-    <div class="section-heading">
-      <div>
-        <h2 id="method-title">How the index works</h2>
-        <p>The count favors coverage over a narrow snapshot of popular repositories.</p>
-      </div>
+  return `<section class="methods-note" aria-labelledby="method-title">
+    <div class="section-head">
+      <h2 id="method-title">How the index works</h2>
+      <p>The count favors coverage over a narrow snapshot of popular repositories.</p>
     </div>
-    <div class="method-content">
+    <div class="methods-body">
       <p>Heretic models are discovered in two passes: repositories carrying the <code>heretic</code> tag, plus repositories with “heretic” in their name. Repository IDs are deduplicated before totals are calculated.</p>
-      <div class="method-list" aria-label="Index methodology">
-        <div><strong>01</strong><span>Find tagged repositories</span></div>
-        <div><strong>02</strong><span>Search model names</span></div>
-        <div><strong>03</strong><span>Deduplicate repository IDs</span></div>
-      </div>
+      <ol class="method-list" aria-label="Index methodology">
+        <li><strong>01</strong><span>Find tagged repositories</span></li>
+        <li><strong>02</strong><span>Search model names</span></li>
+        <li><strong>03</strong><span>Deduplicate repository IDs</span></li>
+      </ol>
     </div>
   </section>`;
 }
 
 function renderLoading(username) {
-  return `<section class="results-section" aria-live="polite" aria-busy="true">
-    <div class="section-heading">
-      <div><h2>Inspecting @${escapeHtml(username)}</h2><p>Reading public model metadata from Hugging Face.</p></div>
+  return `<section class="results" aria-live="polite" aria-busy="true">
+    <div class="section-head">
+      <h2>Inspecting @${escapeHtml(username)}</h2><p>Reading public model metadata from Hugging Face.</p>
     </div>
     <div class="loading-list" aria-label="Loading creator models">
       <span></span><span></span><span></span>
@@ -210,18 +276,18 @@ function renderLoading(username) {
 function renderUser(models, username, maxDownloads) {
   if (!models.length) {
     return `<section class="empty-state" aria-labelledby="empty-title">
-      <div class="empty-icon" aria-hidden="true">0</div>
-      <div><h2 id="empty-title">No Heretic models found for @${escapeHtml(username)}.</h2><p>We checked both the <strong>heretic</strong> tag and model names. Confirm the username or that the repositories are public.</p><button class="text-button" id="clear" type="button">Return to global index</button></div>
+      <div class="empty-mark" aria-hidden="true">∅</div>
+      <div class="empty-copy"><h2 id="empty-title">No Heretic models found for @${escapeHtml(username)}.</h2><p>We checked both the <strong>heretic</strong> tag and model names. Confirm the username or that the repositories are public.</p><button class="text-button" id="clear" type="button">Return to global index</button></div>
     </section>`;
   }
 
-  return `<section class="results-section" aria-labelledby="results-title">
-    <div class="section-heading result-heading">
+  return `<section class="results" aria-labelledby="results-title">
+    <div class="result-head">
       <div><h2 id="results-title">${models.length} model${models.length === 1 ? "" : "s"} for @${escapeHtml(username)}</h2><p>Ranked by lifetime downloads. Recent activity is shown at right.</p></div>
-      <span class="profile-badge">PUBLIC PROFILE</span>
+      <span class="profile-stamp">Public profile</span>
     </div>
     <div class="model-list" role="list" aria-label="Heretic models by lifetime downloads">
-      ${models.slice(0, 8).map((model, i) => `<a class="model-row" role="listitem" href="${escapeHtml(model.url)}" target="_blank" rel="noreferrer">
+      ${models.slice(0, 8).map((model, i) => `<a class="model-row" role="listitem" id="model-${i + 1}" href="${escapeHtml(model.url)}" target="_blank" rel="noreferrer">
         <span class="rank">${String(i + 1).padStart(2, "0")}</span>
         <span class="model-name">${escapeHtml(model.id.split("/").pop())}<small>${escapeHtml(model.id)}</small></span>
         <span class="bar-wrap" aria-hidden="true"><span class="bar" style="width:${pct(model.downloadsAllTime, maxDownloads)}%"></span></span>
