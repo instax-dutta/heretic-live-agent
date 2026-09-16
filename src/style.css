@@ -197,6 +197,21 @@ a { color: inherit; }
 }
 .primary-stat .stat-value { color: var(--accent-ink); }
 .stat-foot { color: var(--subtle); font-size: 11px; line-height: 1.4; }
+.live-rate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.live-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: #2f6b2f;
+}
 
 .lookup-panel {
   display: grid;
@@ -334,6 +349,7 @@ footer a:hover { color: var(--accent); }
 
 @media (prefers-reduced-motion: no-preference) {
   .loading-list span { animation: shimmer 1.5s ease-in-out infinite; }
+  .live-dot { animation: live-pulse 2s ease-in-out infinite; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -344,6 +360,7 @@ footer a:hover { color: var(--accent); }
   }
 }
 @keyframes shimmer { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@keyframes live-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.8); } }
 
 @media (max-width: 960px) {
   .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -41,6 +41,11 @@ export default async function handler(request, response) {
     return response.status(204).end();
   }
 
+  if (request.method && request.method !== "GET") {
+    response.setHeader("Cache-Control", "no-store");
+    return response.status(405).json({ error: "Method not allowed. Use GET." });
+  }
+
   const username = normalizeUsername(request.query?.username);
   if (username && !isValidUsername(username)) {
     return response.status(400).json({ error: "Enter a valid Hugging Face username." });

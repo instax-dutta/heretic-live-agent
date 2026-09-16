@@ -53,6 +53,31 @@ test("answers CORS preflight without contacting Hugging Face", async () => {
   }
 });
 
+test("rejects non-GET methods without contacting Hugging Face", async () => {
+  const originalFetch = globalThis.fetch;
+  let fetchCalls = 0;
+  globalThis.fetch = async () => {
+    fetchCalls += 1;
+    return {
+      ok: true,
+      status: 200,
+      headers: { get: () => "" },
+      json: async () => [],
+    };
+  };
+
+  try {
+    const response = createResponse();
+    await statsHandler({ method: "POST", query: {} }, response);
+
+    assert.equal(response.statusCode, 405);
+    assert.equal(fetchCalls, 0);
+    assert.equal(response.body.error, "Method not allowed. Use GET.");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("publishes stats with a 12-hour shared cache", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => ({

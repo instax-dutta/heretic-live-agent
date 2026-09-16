@@ -1,4 +1,4 @@
-import { createRequestGate } from "../api/stats-core.js";
+import { createRequestGate, estimateDownloadsPerSecond, estimateLiveTotal } from "../api/stats-core.js";
 import { isValidUsername, normalizeUsername } from "../shared/username.js";
 import "./style.css";
 
@@ -8,6 +8,8 @@ const nf = new Intl.NumberFormat("en-US");
 const fallback = { modelCount: 7509, allTimeDownloads: 64904090, last30DaysDownloads: 14438920 };
 let state = { scope: "global", loading: true, error: "", data: null, lastUpdated: null, validation: "" };
 const requestGate = createRequestGate();
+let liveTickerId = null;
+let liveBase = null;
 
 function format(value) {
   return nf.format(Number(value || 0));
@@ -28,8 +30,53 @@ function escapeHtml(value) {
 
 function timeAgo(value) {
   if (!value) return "not yet refreshed";
-  const minutes = Math.max(1, Math.round((Date.now() - new Date(value).getTime()) / 60000));
+  const timestamp = new Date(value).getTime();
+  if (!Number.isFinite(timestamp)) return "not yet refreshed";
+  const minutes = Math.max(1, Math.round((Date.now() - timestamp) / 60000));
   return minutes < 60 ? `${minutes} min ago` : `${Math.round(minutes / 60)} hr ago`;
+}
+
+function formatRate(rate) {
+  if (!Number.isFinite(rate) || rate < 0.1) return "";
+  return rate >= 10 ? String(Math.round(rate)) : rate.toFixed(1);
+}
+
+function stopLiveTicker() {
+  if (liveTickerId !== null) {
+    clearInterval(liveTickerId);
+    liveTickerId = null;
+  }
+  liveBase = null;
+}
+
+function startLiveTicker(totals) {
+  stopLiveTicker();
+  const rate = estimateDownloadsPerSecond(totals?.last30DaysDownloads);
+  if (!rate || rate <= 0) return;
+  if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+    try {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    } catch {
+      // If matchMedia throws, fall through and still tick.
+    }
+  }
+  // Anchor the estimate at render time: the API total is a point-in-time
+  // snapshot (refreshed every 12h), so we count forward from display time.
+  liveBase = {
+    total: Number(totals.allTimeDownloads || 0),
+    last30DaysDownloads: Number(totals.last30DaysDownloads || 0),
+    startedAt: Date.now(),
+  };
+  if (typeof setInterval !== "function") return;
+  liveTickerId = setInterval(() => {
+    const el = document.querySelector("#live-total");
+    if (!el || !liveBase) {
+      stopLiveTicker();
+      return;
+    }
+    const elapsedSeconds = (Date.now() - liveBase.startedAt) / 1000;
+    el.textContent = format(estimateLiveTotal(liveBase.total, liveBase.last30DaysDownloads, elapsedSeconds));
+  }, 1000);
 }
 
 function render() {
@@ -41,6 +88,8 @@ function render() {
   const recentShare = totals.allTimeDownloads
     ? ((totals.last30DaysDownloads / totals.allTimeDownloads) * 100).toFixed(1)
     : 0;
+  const liveRate = estimateDownloadsPerSecond(totals.last30DaysDownloads);
+  const liveRateLabel = formatRate(liveRate);
 
   app.innerHTML = `
     <main class="shell">
@@ -76,8 +125,8 @@ function render() {
         <div class="stats-grid">
           <article class="stat-card primary-stat">
             <div class="stat-label">ALL-TIME DOWNLOADS</div>
-            <div class="stat-value">${format(totals.allTimeDownloads)}</div>
-            <div class="stat-foot">Combined downloads across ${format(totals.modelCount)} models</div>
+            <div class="stat-value" id="live-total" aria-live="off" aria-atomic="false">${format(totals.allTimeDownloads)}</div>
+            <div class="stat-foot">Combined downloads across ${format(totals.modelCount)} models${liveRateLabel ? ` <span class="live-rate"><span class="live-dot" aria-hidden="true"></span>+~${liveRateLabel}/sec live estimate</span>` : ""}</div>
           </article>
           <article class="stat-card">
             <div class="stat-label">LAST 30 DAYS</div>
@@ -125,6 +174,7 @@ function render() {
   document.querySelector("#lookup-form").addEventListener("submit", handleLookup);
   document.querySelector("#retry")?.addEventListener("click", () => fetchStats(state.scope === "user" ? username : undefined));
   document.querySelector("#clear")?.addEventListener("click", () => fetchStats());
+  startLiveTicker(totals);
 }
 
 function renderMethod() {

@@ -84,3 +84,23 @@ export function createRequestGate() {
     },
   };
 }
+
+export const SECONDS_PER_DAY = 24 * 60 * 60;
+export const LIVE_RATE_WINDOW_DAYS = 30;
+
+export function estimateDownloadsPerSecond(last30DaysDownloads, windowDays = LIVE_RATE_WINDOW_DAYS) {
+  const total = Number(last30DaysDownloads || 0);
+  const windowSeconds = Number(windowDays || 0) * SECONDS_PER_DAY;
+  if (!Number.isFinite(total) || total <= 0) return 0;
+  if (!Number.isFinite(windowSeconds) || windowSeconds <= 0) return 0;
+  return total / windowSeconds;
+}
+
+export function estimateLiveTotal(baseTotal, last30DaysDownloads, elapsedSeconds, windowDays = LIVE_RATE_WINDOW_DAYS) {
+  const base = Number(baseTotal || 0);
+  const elapsed = Number(elapsedSeconds || 0);
+  if (!Number.isFinite(base)) return 0;
+  if (!Number.isFinite(elapsed) || elapsed <= 0) return Math.floor(base);
+  const rate = estimateDownloadsPerSecond(last30DaysDownloads, windowDays);
+  return Math.floor(base + rate * elapsed);
+}

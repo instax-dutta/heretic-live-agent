@@ -4,7 +4,7 @@ Heretic Live is a public observability interface for the Heretic model ecosystem
 
 ## Features
 
-- Global all-time download totals
+- Global all-time download totals with a live per-second estimate derived from rolling 30-day volume
 - Rolling 30-day download totals
 - Total indexed model count
 - Creator lookup by Hugging Face username
@@ -96,7 +96,7 @@ node --check api/stats-core.js
 npm audit --audit-level=high
 ```
 
-The tests cover pagination, expansion parameters, deduplication, ranking, aggregate totals, username validation, stale-request protection, cache policy, and CORS preflight behavior.
+The tests cover pagination, expansion parameters, deduplication, ranking, aggregate totals, live-rate estimation, username validation, stale-request protection, cache policy, HTTP method handling, and CORS preflight behavior.
 
 ## Deployment to Vercel
 
