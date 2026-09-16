@@ -51,13 +51,7 @@ function stopLiveTicker() {
     clearInterval(liveTickerId);
     liveTickerId = null;
   }
-  if (rafId !== null && typeof cancelAnimationFrame === "function") {
-    cancelAnimationFrame(rafId);
-    rafId = null;
-  }
   liveBase = null;
-  tracePoints = [];
-  lastTraceFrame = 0;
 }
 
 function startLiveTicker(totals) {
@@ -81,13 +75,9 @@ function startLiveTicker(totals) {
     lastTick: Date.now(),
   };
   if (typeof setInterval !== "function") return;
-  tracePoints = [liveBase.total];
-  displayedTotal = liveBase.total;
-  lastShownTotal = -1;
-  lastTraceFrame = 0;
-  drawTrace(displayedTotal);
   liveTickerId = setInterval(() => {
-    if (!liveBase) {
+    const el = document.querySelector("#live-total");
+    if (!el || !liveBase) {
       stopLiveTicker();
       return;
     }
@@ -95,111 +85,8 @@ function startLiveTicker(totals) {
     const elapsedSeconds = (now - liveBase.lastTick) / 1000;
     liveBase.lastTick = now;
     liveBase.total += sampleDownloadEvents(liveBase.rate, elapsedSeconds);
-    tracePoints.push(liveBase.total);
-    if (tracePoints.length > TRACE_MAX_POINTS) tracePoints.shift();
+    el.textContent = format(liveBase.total);
   }, 1000);
-  if (typeof requestAnimationFrame === "function") {
-    rafId = requestAnimationFrame(traceLoop);
-  }
-}
-
-let rafId = null;
-let displayedTotal = 0;
-let lastShownTotal = -1;
-let lastTraceFrame = 0;
-
-function traceLoop(now) {
-  rafId = null;
-  if (!liveBase) return;
-  // Ease the visible head toward the true total: arrivals land discretely
-  // each second, but the pointer glides there instead of jumping.
-  const dt = Math.min(0.1, lastTraceFrame ? (now - lastTraceFrame) / 1000 : 0.016);
-  lastTraceFrame = now;
-  const gap = liveBase.total - displayedTotal;
-  if (Math.abs(gap) < 0.02) displayedTotal = liveBase.total;
-  else displayedTotal += gap * Math.min(1, dt * 3.5);
-  const el = document.querySelector("#live-total");
-  if (!el) {
-    stopLiveTicker();
-    return;
-  }
-  const shown = Math.floor(displayedTotal);
-  if (shown !== lastShownTotal) {
-    el.textContent = format(shown);
-    lastShownTotal = shown;
-  }
-  drawTrace(displayedTotal);
-  if (liveBase && typeof requestAnimationFrame === "function") {
-    rafId = requestAnimationFrame(traceLoop);
-  }
-}
-
-let tracePoints = [];
-const TRACE_MAX_POINTS = 120;
-
-function drawTrace(headValue) {
-  if (typeof document === "undefined") return;
-  if (!liveBase) return;
-  const canvas = document.querySelector("#live-trace");
-  if (!canvas || tracePoints.length === 0) return;
-  // The head glides every frame while history stays per-tick: append the live
-  // head as the final point so the pointer never steps.
-  const head = Number.isFinite(headValue) ? headValue : tracePoints[tracePoints.length - 1];
-  const points = [...tracePoints, head];
-  const dpr = Math.min(2, (typeof window !== "undefined" && window.devicePixelRatio) || 1);
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
-  if (!width || !height) return;
-  const pixelWidth = Math.round(width * dpr);
-  const pixelHeight = Math.round(height * dpr);
-  if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
-    canvas.width = pixelWidth;
-    canvas.height = pixelHeight;
-  }
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, width, height);
-  const styles = typeof getComputedStyle === "function" ? getComputedStyle(canvas) : null;
-  const accent = styles ? styles.getPropertyValue("--accent").trim() || "#b2341c" : "#b2341c";
-  const grid = "rgba(246, 241, 231, 0.14)";
-  ctx.strokeStyle = grid;
-  ctx.lineWidth = 1;
-  for (let i = 1; i < 4; i += 1) {
-    const y = Math.round((height / 4) * i) + 0.5;
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-    ctx.stroke();
-  }
-  const min = points[0];
-  const max = points[points.length - 1];
-  const span = Math.max(1, max - min);
-  const pace = liveBase ? Number(liveBase.rate || 0) : 0;
-  const pad = 6;
-  const xStep = points.length > 1 ? (width - pad * 2) / (TRACE_MAX_POINTS - 1) : 0;
-  const x0 = width - pad - xStep * (points.length - 1);
-  ctx.strokeStyle = accent;
-  ctx.lineWidth = 1.5 + Math.min(2, pace / 5);
-  ctx.lineJoin = "round";
-  ctx.beginPath();
-  points.forEach((point, i) => {
-    const x = x0 + xStep * i;
-    const y = height - pad - ((point - min) / span) * (height - pad * 2);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-  const lastX = width - pad;
-  const lastY = height - pad - ((max - min) / span) * (height - pad * 2);
-  ctx.fillStyle = accent;
-  ctx.beginPath();
-  ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
-  window.addEventListener("resize", drawTrace);
 }
 
 function initSmoothScroll() {
@@ -261,8 +148,7 @@ function render() {
           <div class="plate-core">
             <div class="plate-label">All-time downloads</div>
             <p class="live-total" id="live-total" aria-live="off" aria-atomic="false">${format(totals.allTimeDownloads)}</p>
-            <canvas id="live-trace" aria-hidden="true"></canvas>
-            <div class="pace-line"><span class="live-dot" aria-hidden="true"></span>${liveRateLabel ? `<span><strong>+~${liveRateLabel}/sec</strong> · 30-day pace, inked live</span>` : `<span>Pace unavailable for this view</span>`}</div>
+            <div class="pace-line"><span class="live-dot" aria-hidden="true"></span>${liveRateLabel ? `<span><strong>+~${liveRateLabel}/sec</strong> · 30-day pace</span>` : `<span>Pace unavailable for this view</span>`}</div>
             <div class="plate-foot">Combined downloads across ${format(totals.modelCount)} models</div>
           </div>
         </div>

@@ -122,7 +122,7 @@ Sharp print edges throughout: zero border radius on every surface, box, and cont
 ## Components
 
 ### Figure plate
-Inverted black ground ({colors.plate-black}) holding the tabular live numeral in newsprint, a canvas trace in live red, and a pace line with the pulsing dot. Caption above in tracked labels. The trace keeps ~120 seconds of inked history; its stroke weight grows with the download pace.
+Inverted black ground ({colors.plate-black}) holding the tabular live numeral in newsprint and a pace line with the pulsing dot. Caption above in tracked labels. The numeral ticks each second with whole-download arrivals drawn from the 30-day pace.
 
 ### Ledger rows
 Label | tabular figure | right-aligned serif-italic note, divided by hairlines. Replaces stat cards everywhere.

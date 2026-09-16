@@ -188,12 +188,6 @@ input { caret-color: var(--accent); }
   letter-spacing: -.03em;
   line-height: 1;
 }
-#live-trace {
-  display: block;
-  width: 100%;
-  height: 72px;
-  margin-top: 18px;
-}
 .pace-line {
   display: flex;
   align-items: center;
