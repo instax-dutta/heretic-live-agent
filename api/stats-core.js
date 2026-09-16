@@ -104,3 +104,37 @@ export function estimateLiveTotal(baseTotal, last30DaysDownloads, elapsedSeconds
   const rate = estimateDownloadsPerSecond(last30DaysDownloads, windowDays);
   return Math.floor(base + rate * elapsed);
 }
+
+function sampleStandardNormal(random) {
+  // Box-Muller; guards keep u/v away from 0 so log stays finite.
+  let u = 0;
+  let v = 0;
+  while (u === 0) u = random();
+  while (v === 0) v = random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+export function sampleDownloadEvents(ratePerSecond, elapsedSeconds, random = Math.random) {
+  // Whole-download arrivals for one tick: a Poisson draw whose long-run mean
+  // is exactly ratePerSecond, so the counter jumps like real traffic (0, 3, 9,
+  // 5, ...) instead of creeping by a fractional average. Downloads are
+  // integers; the average is not a download.
+  const lambda = Number(ratePerSecond || 0) * Number(elapsedSeconds || 0);
+  if (!Number.isFinite(lambda) || lambda <= 0) return 0;
+  const rand = typeof random === "function" ? random : Math.random;
+  if (lambda < 30) {
+    const limit = Math.exp(-lambda);
+    const maxGuard = Math.ceil(lambda * 10) + 100;
+    let count = 0;
+    let p = 1;
+    let guard = 0;
+    do {
+      count += 1;
+      p *= rand();
+      guard += 1;
+    } while (p > limit && guard < maxGuard);
+    return count - 1;
+  }
+  const normal = sampleStandardNormal(rand);
+  return Math.max(0, Math.round(lambda + Math.sqrt(lambda) * normal));
+}
