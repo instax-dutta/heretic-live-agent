@@ -1,21 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
   <title id="title">Heretic Live</title>
   <desc id="desc">Public model reach on Hugging Face.</desc>
-  <rect width="1200" height="630" fill="#111311"/>
-  <path d="M0 0h1200v630H0z" fill="url(#grid)" opacity=".16"/>
-  <rect x="72" y="68" width="52" height="52" rx="8" fill="#c3ed72"/>
-  <path d="M87 80h9v12h14V80h9v28h-9V99H96v9h-9z" fill="#17200f"/>
-  <text x="148" y="102" fill="#f0f1eb" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" letter-spacing="3">HERETIC<tspan fill="#c3ed72">/</tspan>LIVE</text>
-  <text x="72" y="238" fill="#c3ed72" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="5">PUBLIC MODEL INDEX</text>
-  <text x="72" y="326" fill="#f0f1eb" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="700" letter-spacing="-3">How far is</text>
-  <text x="72" y="414" fill="#c3ed72" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="700" letter-spacing="-3">Heretic spreading?</text>
-  <text x="76" y="505" fill="#a1a99d" font-family="Arial, Helvetica, sans-serif" font-size="22">Live download intelligence for public Heretic models on Hugging Face.</text>
-  <rect x="980" y="68" width="148" height="34" rx="4" fill="#202420" stroke="#4e574c"/>
-  <circle cx="1000" cy="85" r="5" fill="#c3ed72"/>
-  <text x="1016" y="91" fill="#c3ed72" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="2">LIVE DATA</text>
-  <defs>
-    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
-      <path d="M48 0H0V48" fill="none" stroke="#a1a99d" stroke-width="1"/>
-    </pattern>
-  </defs>
+  <rect width="1200" height="630" fill="#f6f1e7"/>
+  <text x="72" y="64" fill="#655c4e" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" letter-spacing="4">PUBLIC MODEL INDEX — HUGGING FACE HUB API</text>
+  <rect x="972" y="36" width="156" height="36" fill="none" stroke="#b2341c" stroke-width="2"/>
+  <text x="1000" y="60" fill="#b2341c" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" letter-spacing="2">LIVE DATA</text>
+  <line x1="72" y1="96" x2="1128" y2="96" stroke="#1b1813" stroke-width="3"/>
+  <line x1="72" y1="103" x2="1128" y2="103" stroke="#1b1813" stroke-width="1"/>
+  <text x="72" y="172" fill="#1b1813" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="900" letter-spacing="-1">Heretic<tspan fill="#b2341c" font-weight="500"> / </tspan>Live</text>
+  <text x="72" y="282" fill="#1b1813" font-family="Georgia, 'Times New Roman', serif" font-size="76" font-weight="500" letter-spacing="-1">How far is</text>
+  <text x="72" y="368" fill="#1b1813" font-family="Georgia, 'Times New Roman', serif" font-size="76" font-weight="500" font-style="italic" letter-spacing="-1"><tspan fill="#b2341c">Heretic</tspan> spreading?</text>
+  <text x="72" y="424" fill="#655c4e" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-style="italic">Live download intelligence for</text>
+  <text x="72" y="456" fill="#655c4e" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-style="italic">public Heretic models.</text>
+  <rect x="720" y="130" width="408" height="440" fill="#14120e"/>
+  <rect x="732" y="142" width="384" height="416" fill="none" stroke="#f6f1e7" stroke-opacity="0.35" stroke-width="1.5"/>
+  <text x="748" y="182" fill="#a49a88" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" letter-spacing="3">FIG. 1 — ALL-TIME DOWNLOADS</text>
+  <text x="748" y="262" fill="#f6f1e7" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="800" letter-spacing="-1">64,904,090</text>
+  <polyline points="748,330 800,318 852,322 904,296 956,300 1008,278 1060,282 1104,262" fill="none" stroke="#b2341c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="1104" cy="262" r="7" fill="#f6f1e7"/>
+  <text x="748" y="420" fill="#b2341c" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="2">+~6/SEC · 30-DAY PACE</text>
+  <text x="748" y="508" fill="#a49a88" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-style="italic">Across 7,509 indexed models.</text>
+  <line x1="72" y1="585" x2="1128" y2="585" stroke="#1b1813" stroke-width="1"/>
+  <text x="72" y="610" fill="#655c4e" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="2">HERETIC / LIVE · PUBLIC METADATA ONLY · NO LOGIN REQUIRED</text>
 </svg>
