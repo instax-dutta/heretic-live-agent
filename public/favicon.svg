@@ -1,6 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
-  <title>Heretic Live</title>
-  <rect width="64" height="64" rx="12" fill="#111311"/>
-  <path d="M17 13h9v15h12V13h9v38h-9V36H26v15h-9z" fill="#c3ed72"/>
-  <path d="M47 13h5v8h-5z" fill="#f0a36c"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="faviconTitle">
+  <title id="faviconTitle">Heretic Live</title>
+  <rect width="64" height="64" fill="#14120e"/>
+  <rect x="6.5" y="6.5" width="51" height="51" fill="none" stroke="#f6f1e7" stroke-opacity="0.35" stroke-width="1.5"/>
+  <polyline points="13,47 23,43 31,44 39,33 47,35 54,24" fill="none" stroke="#b2341c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="54" cy="24" r="4.5" fill="#f6f1e7"/>
 </svg>
