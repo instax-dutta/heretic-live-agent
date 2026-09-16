@@ -5,7 +5,6 @@ import {
   collectModels,
   createRequestGate,
   estimateDownloadsPerSecond,
-  estimateLiveTotal,
   fetchAllModels,
   sampleDownloadEvents,
   withModelExpansions,
@@ -93,13 +92,6 @@ test("estimateDownloadsPerSecond derives the per-second rate from 30-day volume"
   assert.equal(estimateDownloadsPerSecond(0), 0);
   assert.equal(estimateDownloadsPerSecond(undefined), 0);
   assert.equal(estimateDownloadsPerSecond(-5), 0);
-});
-
-test("estimateLiveTotal counts forward from the snapshot total", () => {
-  assert.equal(estimateLiveTotal(1000, 2592000, 60), 1060);
-  assert.equal(estimateLiveTotal(1000, 2592000, 0), 1000);
-  assert.equal(estimateLiveTotal(1000, 2592000, -10), 1000);
-  assert.equal(estimateLiveTotal(1000, 0, 60), 1000);
 });
 
 test("sampleDownloadEvents returns nothing for empty rates or intervals", () => {

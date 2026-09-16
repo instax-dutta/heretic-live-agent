@@ -12,6 +12,7 @@ let state = { scope: "global", loading: true, error: "", data: null, lastUpdated
 const requestGate = createRequestGate();
 let liveTickerId = null;
 let liveBase = null;
+let lastTickerKey = "";
 
 function format(value) {
   return nf.format(Number(value || 0));
@@ -100,12 +101,17 @@ function initSmoothScroll() {
   } catch {
     // If matchMedia throws, fall through and still enhance.
   }
-  return new Lenis({
-    autoRaf: true,
-    lerp: 0.1,
-    smoothWheel: true,
-    smoothTouch: false,
-  });
+  try {
+    return new Lenis({
+      autoRaf: true,
+      lerp: 0.1,
+      smoothWheel: true,
+      smoothTouch: false,
+    });
+  } catch {
+    // Smooth scroll is an enhancement: native scroll stays fully working.
+    return null;
+  }
 }
 
 initSmoothScroll();
@@ -204,7 +210,13 @@ function render() {
   document.querySelector("#lookup-form").addEventListener("submit", handleLookup);
   document.querySelector("#retry")?.addEventListener("click", () => fetchStats(state.scope === "user" ? username : undefined));
   document.querySelector("#clear")?.addEventListener("click", () => fetchStats());
-  startLiveTicker(totals);
+  // Restarting re-anchors to the snapshot and drops accrued arrivals, so only
+  // restart when the underlying totals actually changed (new data or new scope).
+  const tickerKey = `${totals.allTimeDownloads}|${totals.last30DaysDownloads}|${totals.modelCount}`;
+  if (tickerKey !== lastTickerKey) {
+    lastTickerKey = tickerKey;
+    startLiveTicker(totals);
+  }
   revealOnScroll();
 }
 

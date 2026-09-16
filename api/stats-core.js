@@ -96,15 +96,6 @@ export function estimateDownloadsPerSecond(last30DaysDownloads, windowDays = LIV
   return total / windowSeconds;
 }
 
-export function estimateLiveTotal(baseTotal, last30DaysDownloads, elapsedSeconds, windowDays = LIVE_RATE_WINDOW_DAYS) {
-  const base = Number(baseTotal || 0);
-  const elapsed = Number(elapsedSeconds || 0);
-  if (!Number.isFinite(base)) return 0;
-  if (!Number.isFinite(elapsed) || elapsed <= 0) return Math.floor(base);
-  const rate = estimateDownloadsPerSecond(last30DaysDownloads, windowDays);
-  return Math.floor(base + rate * elapsed);
-}
-
 function sampleStandardNormal(random) {
   // Box-Muller; guards keep u/v away from 0 so log stays finite.
   let u = 0;
@@ -119,6 +110,8 @@ export function sampleDownloadEvents(ratePerSecond, elapsedSeconds, random = Mat
   // is exactly ratePerSecond, so the counter jumps like real traffic (0, 3, 9,
   // 5, ...) instead of creeping by a fractional average. Downloads are
   // integers; the average is not a download.
+  // Precondition: `random` must be a uniform [0, 1) PRNG. A degenerate
+  // constant still terminates (via maxGuard) but the draw is meaningless.
   const lambda = Number(ratePerSecond || 0) * Number(elapsedSeconds || 0);
   if (!Number.isFinite(lambda) || lambda <= 0) return 0;
   const rand = typeof random === "function" ? random : Math.random;
