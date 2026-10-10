@@ -1,7 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="faviconTitle">
   <title id="faviconTitle">Heretic Live</title>
-  <rect width="64" height="64" fill="#14120e"/>
-  <rect x="6.5" y="6.5" width="51" height="51" fill="none" stroke="#f6f1e7" stroke-opacity="0.35" stroke-width="1.5"/>
-  <polyline points="13,47 23,43 31,44 39,33 47,35 54,24" fill="none" stroke="#b2341c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="54" cy="24" r="4.5" fill="#f6f1e7"/>
+  <!-- The arrival strip: one bar per second, the newest in paper white, with the
+       30-day mean drawn as a capped rule. Matches the site ground and phosphor. -->
+  <rect width="64" height="64" fill="#08090a"/>
+  <g>
+    <rect x="9"  y="38" width="4" height="17" fill="#ffb000" opacity="0.5"/>
+    <rect x="16" y="29" width="4" height="26" fill="#ffb000" opacity="0.5"/>
+    <rect x="23" y="34" width="4" height="21" fill="#ffb000" opacity="0.62"/>
+    <rect x="30" y="20" width="4" height="35" fill="#ffb000" opacity="0.62"/>
+    <rect x="37" y="33" width="4" height="22" fill="#ffb000" opacity="0.5"/>
+    <rect x="44" y="15" width="4" height="40" fill="#ffb000" opacity="0.85"/>
+    <rect x="51" y="26" width="4" height="29" fill="#f4f2ec"/>
+  </g>
+  <rect x="40.5" y="11" width="1.5" height="46" fill="#ffb000"/>
+  <rect x="38" y="9" width="6" height="6" fill="#ffb000"/>
+  <rect x="7" y="55" width="50" height="2" fill="#2a2e34"/>
 </svg>

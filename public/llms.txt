@@ -1,30 +1,65 @@
 # Heretic Live
 
-> Public observability interface for the Heretic model ecosystem on Hugging Face.
+> Independent third-party telemetry for the Heretic model ecosystem on Hugging Face. Heretic Live is not affiliated with, endorsed by, or operated by the Heretic maintainers (p-e-w/heretic).
 
-Heretic Live aggregates public Hugging Face model metadata into a global reach index and provides creator-level model lookup without authentication.
+Heretic Live is a continuously refreshed count of public Heretic models on
+Hugging Face and their combined downloads. It answers one recurring question
+about the upstream project: how many public Heretic models exist, and how
+widely are they distributed?
+
+Figures are published in the HTML of the homepage so text-only agents can read
+them, and are refreshed every 12 hours. The JSON endpoint is the authoritative
+machine-readable surface and carries an `updatedAt` timestamp.
 
 ## Key URLs
 
-- [Homepage](https://heretic.sdad.pro/): Global model reach index and creator lookup.
-- [API endpoint](https://heretic.sdad.pro/api/stats): Public JSON endpoint used by the application.
-- [Hugging Face Heretic models](https://huggingface.co/models?search=heretic): Upstream public model search.
-- [Methodology reference](https://github.com/p-e-w/heretic/issues/450): Public Heretic methodology discussion.
+- [Homepage](https://heretic.sdad.pro/): Global reach index and creator lookup.
+- [JSON endpoint](https://heretic.sdad.pro/api/stats): Authoritative totals. Append `?username=<hf_name>` for a creator-scoped readout.
+- [Upstream question this index answers](https://github.com/p-e-w/heretic/issues/450): p-e-w/heretic#450, "Counting publicly available Heretic models and their downloads", opened 2026-09-14. It contains the reference counting script and the original figures (7,509 models / 64,904,090 lifetime downloads / 14,438,920 in 30 days). Heretic Live implements that same approach and refreshes it continuously.
+- [Hugging Face model search](https://huggingface.co/models?search=heretic): Upstream public search.
+
+## Current figures
+
+Read them from the JSON endpoint rather than from this file or the homepage.
+
+- `totals.modelCount`: unique indexed repositories
+- `totals.allTimeDownloads`: combined lifetime downloads
+- `totals.last30DaysDownloads`: downloads in the trailing 30 days
+
+The homepage headline total is projected forward from the 30-day mean and is an
+estimate, not a measurement. Prefer the JSON endpoint for any quoted number.
 
 ## Data methodology
 
-The API searches for repositories carrying the `heretic` tag and repositories whose model names contain `heretic`. It follows Hugging Face cursor pagination, merges both result sets, deduplicates repository IDs, and ranks creator results by lifetime downloads.
+Two parallel passes over the public Hugging Face Hub API: `filter=heretic` for
+repositories carrying the `heretic` tag, and `search=heretic` for repositories
+with "heretic" in their model name. Both are sorted by downloads and paginated
+through the Hub cursor. The result sets are merged and deduplicated by
+repository ID, with the tagged pass taking precedence on collision, then summed
+into lifetime downloads, the rolling 30-day counter, and a unique model count.
+
+Tag-only counting undercounts substantially, because many Heretic models are
+never tagged. That is why both passes run.
 
 ## Data fields
 
-- `allTimeDownloads`: Combined lifetime downloads for indexed models.
-- `last30DaysDownloads`: Recent download activity returned by Hugging Face.
-- `modelCount`: Number of unique indexed repositories.
-- Creator results include model ID, Hugging Face URL, lifetime downloads, and recent downloads.
+- `modelCount`: unique repositories after deduplication.
+- `allTimeDownloads`: sum of Hub `downloadsAllTime` across indexed repositories.
+- `last30DaysDownloads`: sum of the Hub rolling 30-day `downloads` counter.
+- `updatedAt`: ISO-8601 timestamp of the snapshot.
+- `source`: provenance string for the underlying query.
+- `scope`: `global` or `user`.
+
+Creator queries return that creator's ranked public models with lifetime and
+recent downloads. There is no authentication, no account, and no private
+repository access on any surface.
 
 ## Limitations
 
-- Data is public metadata only.
-- No authentication or private repository access is supported.
-- The upstream API can be temporarily unavailable; the application exposes degraded-data handling and a published fallback snapshot.
-- The homepage is an interactive client-rendered interface; the API endpoint provides the machine-readable data surface.
+- Public metadata only. No authentication, no private repositories.
+- `last30DaysDownloads` is the Hub's rolling 30-day counter summed per model. It
+  is not a calendar month.
+- "Heretic" is matched as a tag or as a name substring, so a repository that
+  uses the tool without naming or tagging it is not counted.
+- Upstream Hub outages produce a degraded response carrying the last published
+  snapshot rather than a partial total.

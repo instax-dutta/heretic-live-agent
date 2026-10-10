@@ -29,8 +29,16 @@ async function getModels(params) {
   }, params, { maxPages: MAX_PAGES });
 }
 
+// The platform rewrites Cache-Control on function responses, so the documented
+// 12-hour shared cache was never reaching clients or downstream caches. Split
+// the two concerns: the CDN caches the snapshot for 12 hours, while the browser
+// revalidates so a reload still sees a fresh edge value.
+const CDN_CACHE = "s-maxage=43200, stale-while-revalidate=600";
+const CLIENT_CACHE = "public, max-age=0, must-revalidate";
+
 export default async function handler(request, response) {
-  response.setHeader("Cache-Control", "s-maxage=43200, stale-while-revalidate=600");
+  response.setHeader("Cache-Control", CLIENT_CACHE);
+  response.setHeader("Vercel-CDN-Cache-Control", CDN_CACHE);
   response.setHeader("Access-Control-Allow-Origin", "*");
   response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   response.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -38,11 +46,13 @@ export default async function handler(request, response) {
 
   if (request.method === "OPTIONS") {
     response.setHeader("Cache-Control", "no-store");
+    response.setHeader("Vercel-CDN-Cache-Control", "no-store");
     return response.status(204).end();
   }
 
   if (request.method && request.method !== "GET") {
     response.setHeader("Cache-Control", "no-store");
+    response.setHeader("Vercel-CDN-Cache-Control", "no-store");
     return response.status(405).json({ error: "Method not allowed. Use GET." });
   }
 
@@ -69,6 +79,10 @@ export default async function handler(request, response) {
       source: "Hugging Face Hub API · heretic tag + name search",
     });
   } catch (error) {
+    // An upstream failure must not be cached at the edge for 12 hours, or the
+    // site stays degraded long after Hugging Face has recovered.
+    response.setHeader("Cache-Control", "no-store");
+    response.setHeader("Vercel-CDN-Cache-Control", "no-store");
     console.error(error);
     return response.status(502).json({
       ok: false,

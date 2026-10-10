@@ -611,7 +611,34 @@ input { caret-color: var(--phos); }
 .methods-copy { min-width: 0; }
 .methods .section-head { padding: 0; }
 .methods-copy > p { margin: 16px 0 0; max-width: 62ch; font-family: var(--serif); font-size: 15px; line-height: 1.75; color: var(--ink-2); }
-.methods code { font-family: var(--mono); font-size: 0.88em; color: var(--phos); }
+.methods-copy code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  color: var(--phos);
+  /* An identifier split across lines reads as two separate tokens. */
+  white-space: nowrap;
+}
+
+/* Attribution, not argument: quieter than the methodology prose, and still a
+   real link so crawlers and readers can reach the sources. */
+.methods-copy .provenance {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--sans);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--faint);
+}
+
+.methods a {
+  color: var(--phos);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 176, 0, 0.4);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.3s var(--ease);
+}
+.methods a:hover { text-decoration-color: var(--phos); }
 
 .method-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
 .method-list li { display: flex; align-items: baseline; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--ink-2); }

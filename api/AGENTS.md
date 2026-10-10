@@ -32,7 +32,8 @@ The only backend. A Vercel serverless function that turns public Hugging Face Hu
 - `username` is `null` in the global scope, never `""`
 - Status codes: `204` for OPTIONS preflight, `400` for an invalid username, `405` for any non-GET method, `502` for upstream failure with a user-safe message, `200` otherwise
 - CORS headers are set before any branch, including errors, so a browser never sees an opaque failure
-- Cache: `s-maxage=43200, stale-while-revalidate=600`. Error and preflight responses override it with `no-store`
+- Cache is split by audience because the platform rewrites `Cache-Control` on function responses: `Cache-Control: public, max-age=0, must-revalidate` for clients, and `Vercel-CDN-Cache-Control: s-maxage=43200, stale-while-revalidate=600` for the edge
+- Every error and preflight response overrides **both** to `no-store`. A 502 cached at the edge would leave the site degraded long after Hugging Face recovered; `test/stats.test.js` guards this
 
 ### Failure handling
 

@@ -20,6 +20,10 @@ Files served verbatim at the site root. Crawler instructions, an AI-readable sum
 - `llms.txt` stays truthful about the real limitations: public metadata only, no authentication, no private repositories, and a degraded state when the upstream API is unavailable
 - Filenames are part of the live URL surface. Renaming one breaks published links, meta tags, or the sitemap. Add instead of renaming
 - Assets carry no build step. They are committed as authored
+- `sitemap.xml` `lastmod` sits inside `<!-- snapshot:lastmod -->` and is rewritten by `update-snapshot.mjs`. The snapshot date is the last real content change for the URL, because the published figures move twice a day
+- `favicon.svg` and `apple-touch-icon.png` are the arrival strip in the site palette: ground `#08090a`, phosphor `#ffb000`, ink `#f4f2ec`. They carry no text and no figures, so they cannot go stale
+- `apple-touch-icon.svg` is the editable source for the PNG, alongside `og-image.svg` for its card
+- `llms.txt` states the provenance relationship to p-e-w/heretic#450 and the unaffiliated-third-party position. That is an accuracy contract, not marketing copy: without it an engine may attribute these totals to the upstream project
 - `og-image.svg` embeds Space Grotesk, IBM Plex Mono, and Spectral as base64 WOFF2 so it renders identically offline. Keep them embedded when editing; a `font-family` reference to a system or CDN font will silently fall back
 - `og-image.svg` carries no hardcoded totals. The hero is the arrival strip, not a figure, so the card never goes stale against a 12-hour dataset. Do not add a number back without also adding its as-of date
 

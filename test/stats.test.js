@@ -78,6 +78,26 @@ test("rejects non-GET methods without contacting Hugging Face", async () => {
   }
 });
 
+test("never lets the CDN cache a failed response", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => { throw new Error("upstream down"); };
+
+  try {
+    // An upstream failure cached for 12 hours would leave the site degraded
+    // long after Hugging Face recovered, so every error path resets the CDN
+    // header as well as the client one.
+    for (const request of [{ method: "GET", query: {} }, { method: "POST", query: {} }]) {
+      const response = createResponse();
+      await statsHandler(request, response);
+
+      assert.equal(response.headers["cache-control"], "no-store");
+      assert.equal(response.headers["vercel-cdn-cache-control"], "no-store");
+    }
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("publishes stats with a 12-hour shared cache", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => ({
@@ -92,7 +112,11 @@ test("publishes stats with a 12-hour shared cache", async () => {
     await statsHandler({ query: {} }, response);
 
     assert.equal(response.statusCode, 200);
-    assert.equal(response.headers["cache-control"], "s-maxage=43200, stale-while-revalidate=600");
+    // The CDN caches the snapshot for 12 hours; the client revalidates so a
+    // reload still sees a fresh edge value. Both must be stated explicitly
+    // because the platform rewrites Cache-Control on function responses.
+    assert.equal(response.headers["vercel-cdn-cache-control"], "s-maxage=43200, stale-while-revalidate=600");
+    assert.equal(response.headers["cache-control"], "public, max-age=0, must-revalidate");
     assert.equal(response.headers["access-control-allow-origin"], "*");
     assert.equal(response.headers["access-control-allow-methods"], "GET, OPTIONS");
     assert.equal(response.headers["access-control-allow-headers"], "Content-Type");

@@ -123,9 +123,11 @@ No environment variables are required for the current public-data implementation
 The site includes a lightweight crawlability and social-sharing layer:
 
 - `public/robots.txt` permits indexing and references the sitemap.
-- `public/sitemap.xml` exposes the canonical homepage URL.
-- `public/llms.txt` summarizes the product, data methodology, API, and limitations for AI systems.
+- `public/sitemap.xml` exposes the canonical homepage URL. Its `lastmod` is driven by the snapshot date, because the published figures move twice a day and a frozen `lastmod` would contradict that.
+- `public/llms.txt` summarizes the product, data methodology, API, limitations, and provenance for AI systems. `index.html` links it with `rel="alternate"`.
 - `index.html` includes canonical, Open Graph, Twitter card, and JSON-LD metadata.
+- The methodology prose, the entity disclaimer, and the outbound links exist in **both** `index.html` and `src/main.js`. The static fallback is discarded the moment JavaScript runs, so a link that lives only in the fallback is a link no visitor and no rendering crawler sees.
+- `/api/stats` is linked from the page as the authoritative machine-readable surface.
 - `public/og-image.png` provides the compatible 1200×630 raster social preview asset.
 - `public/og-image.svg` is the editable source artwork for the PNG preview.
 
