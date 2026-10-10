@@ -3,12 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f6f1e7" />
-    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#08090A" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="stylesheet" href="/src/style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Spectral:ital,wght@0,400;1,400&display=swap"
       rel="stylesheet"
     />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -64,23 +65,47 @@
   </head>
   <body>
     <div id="app">
-      <main class="shell initial-content">
-        <header class="masthead">
-          <div class="dateline">
-            <span>Public model index — Hugging Face Hub API</span>
-            <a class="hub-link" href="https://huggingface.co/models?search=heretic" rel="noreferrer">Browse Hugging Face <span aria-hidden="true">↗</span></a>
-          </div>
-          <a class="nameplate" href="/" aria-label="Heretic Live home">Heretic <span aria-hidden="true">/</span> Live</a>
-        </header>
-        <section class="front" aria-labelledby="page-title">
-          <h1 id="page-title">How far is <em>Heretic</em> spreading?</h1>
-          <p class="standfirst">Explore public Heretic model reach on Hugging Face. Enable JavaScript to load live totals, recent activity, and creator-level results.</p>
-        </section>
-        <section class="methods-note" aria-labelledby="method-title">
-          <h2 id="method-title">How the index works</h2>
-          <p>Repositories are discovered through the Heretic tag and model names, then deduplicated by repository ID.</p>
-        </section>
-      </main>
+      <div class="page">
+        <aside class="rail">
+          <span class="rail-mark">Heretic <em>/</em> Live</span>
+          <span class="rail-tag">Public index</span>
+        </aside>
+        <main class="main">
+          <header class="head">
+            <h1>How far is <em>Heretic</em> spreading?</h1>
+            <p class="dateline">Public model index · Hugging Face Hub API<br>
+              <span class="scope-tag">global index</span> · Published figures</p>
+          </header>
+          <section class="figure">
+            <div class="figure-l">
+              <p class="fig-label">All-time downloads</p>
+              <p class="live-total">64,904,090</p>
+              <p class="figure-sub">Combined downloads across all indexed models</p>
+            </div>
+            <p class="estimator-note"><span>The live total is an estimate, not a measurement. These are the last published figures.</span></p>
+          </section>
+          <ul class="rows">
+            <li class="row">
+              <span class="row-label">Last 30 days</span>
+              <span class="row-value">14,438,920</span>
+              <span class="row-note">22.2% of lifetime volume is recent</span>
+            </li>
+            <li class="row">
+              <span class="row-label">Models tracked</span>
+              <span class="row-value">7,509</span>
+              <span class="row-note">Tag and name discovery, deduplicated by repository ID</span>
+            </li>
+          </ul>
+          <section class="methods">
+            <div class="methods-copy">
+              <div class="section-head">
+                <h2>How the index works</h2>
+                <p>Enable JavaScript for live totals and creator lookup.</p>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>
