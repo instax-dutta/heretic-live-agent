@@ -37,10 +37,18 @@ const CDN_CACHE = "s-maxage=43200, stale-while-revalidate=600";
 const CLIENT_CACHE = "public, max-age=0, must-revalidate";
 
 export default async function handler(request, response) {
+  // HEAD must mirror GET exactly minus the body, including status and cache
+  // headers, so it runs the same path rather than short-circuiting. Short-
+  // circuiting would answer 200 while GET was returning 502, which is how a
+  // revalidation probe starts disagreeing with the response it is validating.
+  // The edge holds this for 12 hours like any other response, so the upstream
+  // cost is paid rarely.
+  const isHead = request.method === "HEAD";
+
   response.setHeader("Cache-Control", CLIENT_CACHE);
   response.setHeader("Vercel-CDN-Cache-Control", CDN_CACHE);
   response.setHeader("Access-Control-Allow-Origin", "*");
-  response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  response.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
   response.setHeader("Access-Control-Allow-Headers", "Content-Type");
   response.setHeader("Access-Control-Max-Age", "86400");
 
@@ -50,7 +58,7 @@ export default async function handler(request, response) {
     return response.status(204).end();
   }
 
-  if (request.method && request.method !== "GET") {
+  if (request.method && request.method !== "GET" && !isHead) {
     response.setHeader("Cache-Control", "no-store");
     response.setHeader("Vercel-CDN-Cache-Control", "no-store");
     return response.status(405).json({ error: "Method not allowed. Use GET." });
@@ -58,6 +66,7 @@ export default async function handler(request, response) {
 
   const username = normalizeUsername(request.query?.username);
   if (username && !isValidUsername(username)) {
+    if (isHead) return response.status(400).end();
     return response.status(400).json({ error: "Enter a valid Hugging Face username." });
   }
 
@@ -69,6 +78,7 @@ export default async function handler(request, response) {
     ]);
 
     const list = collectModels(tagged, named, { filterHeretic: Boolean(username) });
+    if (isHead) return response.status(200).end();
     return response.status(200).json({
       ok: true,
       scope: username ? "user" : "global",
@@ -84,6 +94,7 @@ export default async function handler(request, response) {
     response.setHeader("Cache-Control", "no-store");
     response.setHeader("Vercel-CDN-Cache-Control", "no-store");
     console.error(error);
+    if (isHead) return response.status(502).end();
     return response.status(502).json({
       ok: false,
       error: "Hugging Face is temporarily unavailable. Try refreshing in a moment.",
