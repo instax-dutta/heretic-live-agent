@@ -19,6 +19,8 @@ The regression suite. Node's built-in runner over every behavior worth breaking.
 - Randomness is injected, never mocked globally. `sampleDownloadEvents` takes a PRNG argument so the Poisson draw is deterministic in tests
 - Covered today: cursor pagination, the pagination ceiling, expansion parameter merging, tag-plus-name deduplication and ranking, aggregate totals, live rate estimation, discrete arrival sampling, figure scope labels, username normalization and validation, stale-request protection, cache policy, HTTP method handling, and CORS preflight
 - The scope-safety test asserts no field stays identical to the global copy, not merely that the username appears somewhere. A weakened disjunction here is how a creator total silently becomes a global claim
+- `snapshot.test.js` guards the published figures rather than logic: the static HTML and the client fallback must publish the same numbers, the derived share must match, and the snapshot must carry a date and be within tolerance
+- The age tolerance in `snapshot.test.js` is the alarm for dead automation. Raise it only alongside the schedule in `.github/AGENTS.md`, never to silence a failure
 
 ## Work Guidance
 

@@ -33,6 +33,12 @@ The browser application. One page, one render function, one state object, one li
 - Every interpolated user-supplied value goes through `escapeHtml()`. Usernames come from the URL and the form
 - Leave the field blank in the lookup form to return to the global index. That is the documented way out of a creator view, not just an empty-input edge case
 
+### The published snapshot
+
+- `fallback` and `fallbackAsOf` sit inside the `// snapshot:start` and `// snapshot:end` markers and are rewritten by `update-snapshot.mjs`. Never edit the numbers by hand
+- `fallbackAsOf` is what makes a stale snapshot honest. A degraded view shows `snapshot <date>` rather than a relative "now", because that is what the numbers on screen actually are
+- The same figures appear in `index.html` behind `<!-- snapshot:* -->` markers. Nothing at runtime keeps the two copies in step; `test/snapshot.test.js` does
+
 ### Styles
 
 - `style.css` is native CSS with no preprocessor, no utility framework, and no build step beyond Vite bundling it

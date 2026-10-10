@@ -1,0 +1,55 @@
+name: Refresh published snapshot
+
+# The homepage is a static build that publishes figures which change every 12
+# hours. A crawler reading the served HTML sees those figures and nothing else,
+# so if they are never refreshed the site serves a wrong number to every AI
+# agent that reads it. This workflow keeps them current.
+
+on:
+  schedule:
+    # Twice a day, matching the API's own 12-hour cache. Deliberately offset from
+    # the hour so the run does not land on a shared busy minute.
+    - cron: '17 */12 * * *'
+  # Allows a manual run from the Actions tab, and lets Dependabot-style tooling
+  # trigger a refresh on demand.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-published-snapshot
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # update-snapshot.mjs writes no file and exits 0 when the upstream
+      # snapshot has not changed, so this step fails only on a real problem.
+      - name: Refresh snapshot from the live API
+        run: node update-snapshot.mjs
+
+      - name: Fail if the published figures disagree
+        # Guards against a hand edit that leaves the static HTML and the client
+        # fallback publishing different numbers.
+        run: node --test test/snapshot.test.js
+
+      - name: Commit refreshed figures
+        run: |
+          if git diff --quiet; then
+            echo "No change in the published snapshot."
+            exit 0
+          fi
+          AS_OF=$(node -e "process.stdout.write(require('fs').readFileSync('src/main.js','utf8').match(/const fallbackAsOf = \"([^\"]+)\";/)[1])")
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html src/main.js
+          git commit -m "Refresh published snapshot to ${AS_OF}"
+          git push

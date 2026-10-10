@@ -6,7 +6,13 @@ import { isValidUsername, normalizeUsername } from "../shared/username.js";
 const app = document.querySelector("#app");
 const nf = new Intl.NumberFormat("en-US");
 
-const fallback = { modelCount: 7509, allTimeDownloads: 64904090, last30DaysDownloads: 14438920 };
+// snapshot:start
+// Published snapshot used when the upstream API is unreachable, and the only
+// figures a text-only retriever ever sees. Refreshed by update-snapshot.mjs;
+// `asOf` dates them so a stale snapshot is honest rather than merely wrong.
+const fallback = { modelCount: 8033, allTimeDownloads: 77209700, last30DaysDownloads: 14812479 };
+const fallbackAsOf = "2026-10-10T09:43:34.232Z";
+// snapshot:end
 let state = { scope: "global", loading: true, error: "", data: null, lastUpdated: null, validation: "" };
 const requestGate = createRequestGate();
 
@@ -58,6 +64,14 @@ function timeAgo(value) {
   if (!Number.isFinite(timestamp)) return "not yet refreshed";
   const minutes = Math.max(1, Math.round((Date.now() - timestamp) / 60000));
   return minutes < 60 ? `${minutes} min ago` : `${Math.round(minutes / 60)} hr ago`;
+}
+
+// A degraded view shows the snapshot's own date rather than a relative "now",
+// because that is what the numbers on screen actually are.
+function snapshotStamp() {
+  const stamp = new Date(fallbackAsOf);
+  if (!Number.isFinite(stamp.getTime())) return "published figures";
+  return `snapshot ${stamp.toISOString().slice(0, 10)}`;
 }
 
 function formatRate(rate) {
@@ -232,7 +246,7 @@ function render() {
         <header class="head reveal">
           <h1>How far is <em>Heretic</em> spreading?</h1>
           <p class="dateline">Public model index · Hugging Face Hub API<br>
-            ${state.error ? '<span class="stamp warn">Degraded data</span> ' : ""}<span class="scope-tag">${scopeTag}</span> · Updated ${timeAgo(state.lastUpdated)} · refreshes every 12 hours
+            ${state.error ? '<span class="stamp warn">Degraded data</span> ' : ""}<span class="scope-tag">${scopeTag}</span> · ${degraded ? snapshotStamp() : `Updated ${timeAgo(state.lastUpdated)}`} · refreshes every 12 hours
           </p>
         </header>
 

@@ -141,6 +141,32 @@ The card follows the current design system in `DESIGN.md`: near-black ground, ph
 
 Provenance: the SVG was authored by hand to the design system above. The PNG was rendered from that SVG by headless Google Chrome at 1200×630, which resolves the embedded webfonts exactly as a browser would. No external image-generation service was used, and no Antigravity-generated asset is claimed.
 
+## Keeping the published figures current
+
+The homepage is a static build, but it publishes download totals that change every 12 hours. A crawler reading the served HTML sees those figures and nothing else, so if they are never refreshed the site serves a wrong number to every AI agent that reads it.
+
+`update-snapshot.mjs` fetches `/api/stats` and rewrites the figures in two places:
+
+- `index.html`, inside `<!-- snapshot:* -->` marker pairs, so the served HTML carries the same numbers
+- `src/main.js`, between the `// snapshot:start` and `// snapshot:end` markers, as the client-side fallback used when the upstream API is unreachable
+
+```bash
+node update-snapshot.mjs --dry-run   # report what would change, write nothing
+node update-snapshot.mjs             # write the snapshot
+node update-snapshot.mjs --api <url> # point at a different deployment
+```
+
+The script is idempotent: when the upstream snapshot has not changed it writes no file, so a scheduled run produces no empty commit. It exits non-zero on any upstream problem rather than leaving yesterday's figures quietly in place, and it refuses to move the published figures backwards if the upstream cache hands back an older snapshot.
+
+`.github/workflows/update-snapshot.yml` runs it twice a day, matching the API's own 12-hour cache, and commits only when something changed. It needs no secrets; `/api/stats` is public, so the workflow requires only `contents: write`.
+
+Two guards back this up:
+
+- `test/snapshot.test.js` fails if `index.html` and `src/main.js` ever publish different figures, if the derived recent-share does not match the published numbers, or if the snapshot carries no date
+- The same suite fails if the snapshot is older than 30 days. This is the alarm for automation that has stopped: GitHub disables scheduled workflows after 60 days of repository inactivity, and a revoked token fails quietly. Without that check a dead job would look exactly like a healthy page
+
+Every published figure is dated in the markup, so a snapshot that does go stale reads as dated rather than as current.
+
 ## Repository hygiene
 
 Generated dependencies and build output are excluded from version control. Do not commit `.env` files, credentials, or private Hugging Face data.
