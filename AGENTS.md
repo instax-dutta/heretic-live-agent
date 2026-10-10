@@ -83,6 +83,7 @@ Heretic Live is a single-page public observability interface for the Heretic mod
 - Factual copy, methodology, and Hugging Face attribution are product commitments. Do not rewrite them for tone, length, or layout.
 - Reskin and restructure freely. Do not change the API response shape, the live-rate math, or the state machine without updating `api/`, `shared/`, and `test/` in the same change.
 - Public Hugging Face metadata only. No authentication, no private repositories, no secrets, no environment variables.
+- Heretic Live is an unaffiliated third-party observer of the upstream project, not an official surface of it. The methodology, the disclaimer, and the provenance links must appear in both `index.html` and `src/main.js`, because the static fallback is discarded the moment JavaScript runs.
 - The live total is a rate estimate extrapolated from the 30-day mean, not a measurement. Copy must never imply otherwise.
 - The static HTML publishes figures a crawler reads without JavaScript. Those figures are machine-owned: edit them through `update-snapshot.mjs` or the snapshot markers, never by hand. `test/snapshot.test.js` fails if the two copies disagree or the snapshot goes stale.
 - Keep keyboard navigation, visible focus, responsive layout, and `prefers-reduced-motion` behavior working on every change.

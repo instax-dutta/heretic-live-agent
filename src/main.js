@@ -11,7 +11,7 @@ const nf = new Intl.NumberFormat("en-US");
 // figures a text-only retriever ever sees. Refreshed by update-snapshot.mjs;
 // `asOf` dates them so a stale snapshot is honest rather than merely wrong.
 const fallback = { modelCount: 8034, allTimeDownloads: 77209700, last30DaysDownloads: 14812479 };
-const fallbackAsOf = "2026-10-10T09:57:46.666Z";
+const fallbackAsOf = "2026-10-10T10:00:09.369Z";
 // snapshot:end
 let state = { scope: "global", loading: true, error: "", data: null, lastUpdated: null, validation: "" };
 const requestGate = createRequestGate();
@@ -378,6 +378,10 @@ function revealOnScroll() {
   }, 1600);
 }
 
+// The methodology, the entity disclaimer, and the outbound links must exist in
+// this template as well as in the static fallback in index.html. The fallback
+// is discarded the moment this runs, so a link that lives only there is a link
+// no visitor and no rendering crawler ever sees.
 function renderMethod() {
   return `<section class="methods reveal" aria-labelledby="method-title">
     <div class="methods-copy">
@@ -385,7 +389,9 @@ function renderMethod() {
         <h2 id="method-title">How the index works</h2>
         <p>The count favors coverage over a narrow snapshot of popular repositories.</p>
       </div>
-      <p class="methods-body">Heretic models are discovered in two passes: repositories carrying the <code>heretic</code> tag, plus repositories with "heretic" in their name. Repository IDs are deduplicated before totals are calculated.</p>
+      <p class="methods-body">Heretic models are discovered in two passes over the public Hugging Face Hub API: repositories carrying the <code>heretic</code> tag, plus repositories with "heretic" in their name. The two result sets are merged and deduplicated by repository ID before any total is calculated, so the count favors coverage over a narrow snapshot of popular repositories.</p>
+      <p class="methods-body">The totals above are aggregate download counts for public repositories. The <a href="/api/stats" rel="noreferrer">JSON endpoint</a> is the authoritative machine-readable surface, carries an <code>updatedAt</code> timestamp, and accepts <code>?username=</code> for a creator-scoped readout. A summary for language models is at <a href="/llms.txt" rel="noreferrer">/llms.txt</a>.</p>
+      <p class="provenance">Heretic Live is an independent, unaffiliated third-party index. It is not operated or endorsed by the Heretic maintainers. The counting approach and the original reference figures come from <a href="https://github.com/p-e-w/heretic/issues/450" target="_blank" rel="noreferrer">p-e-w/heretic#450</a>, and the upstream models themselves are at <a href="https://huggingface.co/models?search=heretic" target="_blank" rel="noreferrer">huggingface.co/models?search=heretic</a>.</p>
     </div>
     <ol class="method-list" aria-label="Index methodology">
       <li><b>01</b><span>Find tagged repositories</span></li>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180" role="img" aria-labelledby="t">
+  <title id="t">Heretic Live</title>
+  <rect width="180" height="180" fill="#08090a"/>
+  <text x="90" y="52" fill="#f4f2ec" font-family="Helvetica, Arial, sans-serif" font-size="27" font-weight="700" text-anchor="middle" letter-spacing="0.5">Heretic</text>
+  <text x="90" y="52" fill="#ffb000" font-family="Helvetica, Arial, sans-serif" font-size="27" font-weight="700" text-anchor="middle" letter-spacing="0.5" opacity="0">.</text>
+  <g>
+    <rect x="26"  y="108" width="9" height="34" fill="#ffb000" opacity="0.5"/>
+    <rect x="41"  y="94"  width="9" height="48" fill="#ffb000" opacity="0.5"/>
+    <rect x="56"  y="102" width="9" height="40" fill="#ffb000" opacity="0.62"/>
+    <rect x="71"  y="78"  width="9" height="64" fill="#ffb000" opacity="0.62"/>
+    <rect x="86"  y="100" width="9" height="42" fill="#ffb000" opacity="0.5"/>
+    <rect x="101" y="66"  width="9" height="76" fill="#ffb000" opacity="0.85"/>
+    <rect x="116" y="84"  width="9" height="58" fill="#ffb000"/>
+    <rect x="131" y="92"  width="9" height="50" fill="#ffb000" opacity="0.62"/>
+    <rect x="146" y="70"  width="9" height="72" fill="#f4f2ec"/>
+  </g>
+  <rect x="118" y="58" width="3" height="90" fill="#ffb000"/>
+  <rect x="113" y="53" width="13" height="13" fill="#ffb000"/>
+  <rect x="22" y="148" width="136" height="3" fill="#2a2e34"/>
+</svg>

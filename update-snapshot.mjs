@@ -138,7 +138,18 @@ const js = replaceMarkedRegion(jsBefore, "// snapshot:start", "// snapshot:end",
   `const fallbackAsOf = "${iso}";`,
 ]);
 
-const changed = html !== htmlBefore || js !== jsBefore;
+// The snapshot date is the last real content change for this URL, so it is
+// also the honest lastmod. Without this the sitemap claims the page has not
+// changed since the issue date while the published figures move twice a day.
+const sitemapBefore = read("public/sitemap.xml");
+const sitemap = replaceMarkedRegion(
+  sitemapBefore,
+  "<!-- snapshot:lastmod -->",
+  "<!-- /snapshot:lastmod -->",
+  [`<lastmod>${iso.slice(0, 19)}Z</lastmod>`],
+);
+
+const changed = html !== htmlBefore || js !== jsBefore || sitemap !== sitemapBefore;
 
 if (DRY_RUN) {
   console.log("update-snapshot: dry run, no files written");
@@ -157,5 +168,6 @@ if (!changed) {
 
 writeFileSync(resolve(ROOT, "index.html"), html);
 writeFileSync(resolve(ROOT, "src/main.js"), js);
+writeFileSync(resolve(ROOT, "public/sitemap.xml"), sitemap);
 console.log(`update-snapshot: wrote snapshot as of ${iso}`);
 console.log(`  models ${nf.format(totals.modelCount)} | lifetime ${nf.format(totals.allTimeDownloads)} | 30 days ${nf.format(totals.last30DaysDownloads)} (${share}%)`);
