@@ -5,14 +5,14 @@ export function getFigureLabels({ isUser, username, formattedModelCount }) {
   if (isUser && username) {
     const tag = `@${username}`;
     return {
-      captionLeft: `Fig. 1 — ${tag}’s indexed downloads`,
-      captionRight: `${tag} · creator view`,
-      plateFoot: `Across ${tag}’s ${formattedModelCount} indexed models`,
+      captionLeft: `${tag}'s indexed downloads`,
+      captionRight: `creator view`,
+      plateFoot: `Across ${tag}'s ${formattedModelCount} indexed models`,
     };
   }
   return {
-    captionLeft: "Fig. 1 — Cumulative public downloads, tag-plus-name index",
-    captionRight: "Aggregated across every indexed public repository",
-    plateFoot: `Combined downloads across ${formattedModelCount} models`,
+    captionLeft: "All-time downloads · tag-plus-name index",
+    captionRight: `global index`,
+    plateFoot: "Combined downloads across all indexed models",
   };
 }

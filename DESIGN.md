@@ -1,162 +1,173 @@
 ---
 name: Heretic Live
-description: A self-inking data-desk broadsheet for public Heretic model reach.
+description: A tide gauge for an accumulating quantity. The live estimate's own variance is the hero.
 colors:
-  live-red: "#b2341c"
-  live-red-deep: "#8e2815"
-  newsprint: "#f6f1e7"
-  paper-soft: "#fdfbf3"
-  ink: "#1b1813"
-  muted-ink: "#655c4e"
-  faint-ink: "#6b6252"
-  hairline: "#d9d0bc"
-  hairline-soft: "#e7dfcc"
-  plate-black: "#14120e"
-  plate-dim: "#a49a88"
+  ground: "#08090a"
+  panel: "#0e1012"
+  panel-2: "#14171a"
+  ink: "#f4f2ec"
+  ink-2: "#b9bcc2"
+  dim: "#969ba3"
+  faint: "#7a7f87"
+  rule: "#1e2126"
+  rule-2: "#2a2e34"
+  phos: "#ffb000"
+  phos-ink: "#08090a"
+  alert: "#ff5a47"
 typography:
-  display:
-    fontFamily: "Spectral, Georgia, serif"
-    fontSize: "clamp(40px, 6.4vw, 72px)"
+  statement:
+    fontFamily: "Space Grotesk, system-ui, sans-serif"
+    fontSize: "clamp(22px, 2.5vw, 32px)"
     fontWeight: 500
-    lineHeight: 1.02
-    letterSpacing: "-0.02em"
-  headline:
-    fontFamily: "Spectral, Georgia, serif"
-    fontSize: "30px"
-    fontWeight: 600
     lineHeight: 1.1
-    letterSpacing: "-0.02em"
-  body:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "14px"
-    fontWeight: 400
-    lineHeight: 1.55
-  label:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "11px"
+    letterSpacing: "-0.018em"
+  figure:
+    fontFamily: "Space Grotesk, system-ui, sans-serif"
+    fontSize: "clamp(46px, 9.6vw, 138px)"
     fontWeight: 700
+    lineHeight: 0.86
+    letterSpacing: "-0.045em"
+  ledger-value:
+    fontFamily: "Space Grotesk, system-ui, sans-serif"
+    fontSize: "clamp(24px, 3.1vw, 38px)"
+    fontWeight: 500
+    letterSpacing: "-0.03em"
+  label:
+    fontFamily: "IBM Plex Mono, ui-monospace, monospace"
+    fontSize: "9.5px"
+    fontWeight: 500
     lineHeight: 1.4
-    letterSpacing: "0.14em"
-components:
-  button-primary:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.paper-soft}"
-    padding: "0 18px"
-    height: "50px"
-  button-primary-hover:
-    backgroundColor: "{colors.live-red}"
-    textColor: "{colors.paper-soft}"
+    letterSpacing: "0.16em"
+  note:
+    fontFamily: "Spectral, Georgia, serif"
+    fontStyle: italic
+    fontSize: "13.5px"
+    lineHeight: 1.75
 ---
 
 # Design System: Heretic Live
 
 ## Overview
 
-**Creative North Star: "The Self-Inking Broadsheet"**
+**Creative North Star: "The Tide Gauge"**
 
-Heretic Live is a data-desk broadsheet that inks itself. Warm newsprint paper, ink near-black, and one signal-red live ink carry the whole surface: a folio masthead with dateline, a captioned black figure plate where the cumulative total ticks live above a red trace that draws its own pace, ledger rows instead of stat cards, and a boxed creator-inquiry form. The aesthetic philosophy is print authority plus visible motion — scale awe comes from a just-printed numeral and an inking seismograph line, never from neon, glass, or dashboard chrome. Density is editorial: tight rules, generous air between sections, small tracked labels against large serif headlines.
+Heretic Live is an instrument for watching a quantity accumulate. The page's one live signal is an estimate, not a measurement, so the design does the honest thing: it shows the estimate's variance instead of hiding it. A channel across the top records one bar per second of sampled arrivals; the 30-day mean is a dashed rule the bars fluctuate around; the cumulative figure sits below at full measure. Near-black ground, one phosphor amber, a vertical name rail. Nothing glows, nothing is a card, nothing claims to be measured.
 
 **Key Characteristics:**
-- Newsprint ground with hairline rules and double-rule section breaks
-- One black figure plate per view; the live numeral and trace live there
-- Single signal-red accent reserved for live motion, status, and key actions
-- Serif argument (headlines, standfirsts, notes) against grotesque figures and labels
+- One vertical rail carrying the name and a live status; a horizontal folio below it
+- One instrument band: a 90-second channel of sampled arrivals with the mean drawn through it
+- A single figure at full measure, tabular, with a marginal editorial note pinned beside it
+- Register rows instead of stat cards: label, figure, and a right-aligned italic note
+- Amber appears only where something is live or acts
 
 ## Colors
 
-Restrained paper-and-ink neutrals plus one saturated red that owns everything live.
+Near-black ground, paper-white ink, and one phosphor amber that owns everything live.
 
 ### Primary
-- **Live Ink Red** (#b2341c): the trace line, the live dot, the stamped live status, row bars, hover states, focus rings, and text selection. Anything red on the page is moving or actionable.
-- **Conviction Deep Red** (#8e2815): error text, the degraded-data stamp, and inline code — red with gravity, never for decoration.
+- **Phosphor Amber** (`#ffb000`): the arrival bars, the mean rule, the live dot, focus rings, the primary action, and inline links. Amber on the ground measures 10.4:1.
+- **Alert Red** (`#ff5a47`): the degraded stamp and the correction border only. Never decoration.
 
 ### Neutral
-- **Newsprint** (#f6f1e7): page ground.
-- **Soft Paper** (#fdfbf3): inquiry box and hovered-row grounds.
-- **Print Ink** (#1b1813): text, rules that matter, masthead borders, primary buttons.
-- **Muted Ink** (#655c4e): secondary text, labels, dateline (5.5:1 on newsprint).
-- **Faint Ink** (#6b6252): captions, ranks, placeholders — the lightest ink allowed for informative text (4.5:1 on newsprint).
-- **Hairline** (#d9d0bc): ledger dividers.
-- **Soft Hairline** (#e7dfcc): bar tracks and loading shimmer.
-- **Plate Black** (#14120e): the figure plate ground.
-- **Plate Dim** (#a49a88): secondary text on the plate.
+- **Ground** (`#08090a`): the page.
+- **Panel** (`#0e1012`): the instrument band and the focused row.
+- **Ink** (`#f4f2ec`): the figure and primary text. 17.0:1.
+- **Ink 2** (`#b9bcc2`): secondary text and the scope tag. 10.0:1.
+- **Dim** (`#969ba3`): labels, dateline, figure label. 6.8:1.
+- **Faint** (`#7a7f87`): captions, ranks, placeholders. 4.7:1. This is the AA floor; nothing informative may go below it.
+- **Rule** (`#1e2126`): hairlines and the empty channel ticks.
+- **Rule 2** (`#2a2e34`): control borders.
 
 ### Named Rules
-**The One Red Rule.** Red appears only where something is live, erred, or acts. Its rarity is the point; a red element that never moves is a defect.
+**The One Phosphor Rule.** Amber appears only where something is live or acts. A still amber element is a defect.
+**The Contrast Floor.** Every text token is verified at 4.5:1 or better against both the ground and the panel. Recompute before changing any of them.
 
 ## Typography
 
-**Display Font:** Spectral, Georgia, serif (headlines, standfirsts, editorial notes)
-**Body/Label Font:** Archivo, system-ui, sans-serif (masthead, figures, labels, buttons)
-**Measurement Font:** system mono stack (ui-monospace, SFMono-Regular, Menlo) — raw download readings, ranks, and the @ mark only.
+**UI and figures:** Space Grotesk (statement, figure, register values)
+**Labels and measurements:** IBM Plex Mono (dateline, captions, ranks, figures, raw readings)
+**Editorial voice:** Spectral italic (estimator note, row notes, methodology prose)
 
-**Character:** A serif argues, a grotesque counts. Spectral carries every sentence-length thought; Archivo 800/900 sets the nameplate and the giant tabular numeral; mono never speaks prose.
+**Character:** A grotesque measures, a mono labels, a serif editorialises. The serif is reserved for prose that explains a judgement; it never labels anything.
 
 ### Hierarchy
-- **Display** (Spectral 500, clamp(40px, 6.4vw, 72px), 1.02): the front-page question only.
-- **Headline** (Spectral 600, 30px, 1.1): section heads, inquiry and result titles.
-- **Figure numeral** (Archivo 800, clamp(52px, 10vw, 128px), 1.0, tabular): the live total. A figure, not a heading — exempt from the display cap by intent.
-- **Body** (Archivo 400, 14px, 1.55, ≤62ch): interface prose.
-- **Standfirst/note** (Spectral italic, 14–19px): ledes and ledger notes.
-- **Label** (Archivo 700, 11px, +0.14em tracking, uppercase): dateline, plate labels, captions, form labels.
+- **Statement** (Space Grotesk 500, clamp(22px, 2.5vw, 32px), 1.1): the question only.
+- **Figure** (Space Grotesk 700, clamp(46px, 9.6vw, 138px), 0.86, tabular): the live total. A figure, not a heading.
+- **Register value** (Space Grotesk 500, clamp(24px, 3.1vw, 38px), tabular): the three ledger figures.
+- **Section head** (Space Grotesk 500, clamp(19px, 2vw, 25px)).
+- **Body** (Space Grotesk 400, 13.5px, 1.6): interface prose.
+- **Note** (Spectral italic, 13.5px, 1.75): editorial asides and methodology.
+- **Label** (IBM Plex Mono 500, 9.5px, +0.16em, uppercase): dateline, figure label, strip captions, form labels, ranks.
 
 ### Named Rules
-**The Tabular Numeral Rule.** Every number that changes or compares is tabular (`font-variant-numeric: tabular-nums`); a ticking figure that jitters in width is a defect.
-**The No-Kicker Rule.** Headings carry their own weight — no eyebrow label above a heading, ever.
+**The Tabular Numeral Rule.** Every number that changes or compares is tabular. A jittering figure is a defect.
+**The No-Kicker Rule.** Headings carry their own weight. No eyebrow label above a heading, ever.
+**The Serif Is Not A Label.** Spectral is a voice, never a label. A serif heading or caption is a defect.
 
 ## Layout
 
-Single centered folio column (min(100% − page inset, 1080px)). Reading order: masthead folio → front headline + standfirst + press line → Fig. 1 plate → ledger rows → inquiry box → results or methods note → imprint footer. Section breaks are 3px double rules; internal divisions are 1px hairlines. Spacing rhythm: tight groups (12–18px), generous separations (36–72px), always more space above a heading than below it. Responsive: inquiry and methods stack to one column under 960px; ledger notes drop below values under 760px; model rows shed the bar column, then collapse to rank/name/number under 600px.
+A 1560px sheet: a 46px vertical rail plus a content column. The rail collapses to a horizontal folio below 900px. Reading order: folio and statement -> instrument band -> figure and estimator note -> register rows -> lookup -> results or methods -> imprint. Section breaks are hairlines; the register and the lookup carry a brighter `--ink-2` rule because they open a section. Spacing rhythm: tight groups (12–18px), generous separations (26–46px).
+
+Breakpoints are 1100px (register and methods tighten), 900px (rail collapses, single-column figure and lookup, rows stack), 560px (form stacks, model rows collapse to two lines), 380px (the figure shrinks further).
 
 ## Elevation & Depth
 
-No shadows anywhere — depth is conveyed by paper tone steps (newsprint → soft paper), rule weights (hairline vs. double rule), and one inverted plate (black figure on paper). Flat by principle, not by omission.
+No shadows anywhere, including on the live bar. Depth comes from paper tone steps (ground -> panel) and rule weight. Flat by principle.
 
 ### Named Rules
-**The Print Flat Rule.** Nothing floats. Emphasis comes from ink weight, scale, or the single plate inversion — never from a shadow.
+**The Instrument Flat Rule.** Nothing floats, nothing glows. A soft blur on an otherwise hard-edged page reads as a rendering fault.
 
 ## Shapes
 
-Sharp print edges throughout: zero border radius on every surface, box, and control. The only circles in the system are the 8px live dot and the button icon medallions. Rules do the shaping: 3px double rules open major sections, 1.5px strokes box the inquiry form and stamps, 1px hairlines divide ledger rows. Major vessels are double-bezel mounted plates: a 1px outer shell with 8–10px padding holding a bordered inner core (figure plate, inquiry box). Stamps (status markers) sit rotated −1.2deg like a struck mark.
+Zero radius on every surface, box, and control. The only circles are the live dot and the dead man's glyph in the empty state. Rules do the shaping.
 
 ## Components
 
-### Figure plate
-Inverted black ground ({colors.plate-black}) holding the tabular live numeral in newsprint and a pace line with the pulsing dot. Caption above in tracked labels. The numeral ticks each second with whole-download arrivals drawn from the 30-day pace.
+### Arrival strip (the instrument band)
+A bordered panel holding a full-width 90-slot channel. Unfilled slots render a 2px baseline tick so the channel reads as an instrument at rest rather than as a broken render during the first 90 seconds. Filled slots draw an amber bar; the newest sample is paper-white with no glow. A dashed vertical rule with a square cap marks the 30-day mean.
 
-### Ledger rows
-Label | tabular figure | right-aligned serif-italic note, divided by hairlines. Replaces stat cards everywhere.
+The vertical scale is anchored to the mean, `max(3, ceil(rate * 2.2))`, not to the largest sample, so the mean rule never moves and above/below-average seconds stay comparable across sessions and scopes. A zero-arrival second draws a flat 2px tick: quiet is real information. The left caption reads the true elapsed window (`12 s ago`, then `90 s ago`) so a partly filled channel explains itself.
+
+### Figure
+The figure label, the tabular total, the pace line, and the sub-line, with the estimator note pinned to the right behind a hairline rule. The note states the estimate is not a measurement and that the spread is the estimator's own variance. It is not optional copy.
+
+### Register rows
+`label | figure | note` on a hairline. The figure column is `auto`, not a fraction: a fractional value column leaves a dead canyon between the number and the note.
+
+### Lookup
+A 1px `--ink-2` box on panel that shifts to amber on focus-within; amber mono `@` sigil; amber caret; the primary action is a solid amber block with ink text.
 
 ### Buttons
-- **Shape:** square corners, no radius.
-- **Primary:** ink ground, paper text, 12px tracked uppercase; min-height 50px. The trailing arrow always sits in its own 34px circular medallion, flush to the button's right padding — never naked beside the text.
-- **Hover:** ground shifts to live red; the medallion drifts diagonally and swells slightly. **Press:** the whole button scales to 0.98. **Focus:** 2px live-red outline offset 3px. All motion on a single premium easing curve.
-- **Text buttons:** transparent, deep-red, underlined with 3px offset.
-- **Motion:** sections arrive on a heavy 0.9s fade-up via IntersectionObserver (transform + opacity only, 70ms stagger); nothing animates under `prefers-reduced-motion`.
-
-### Inquiry field
-1.5px ink box on paper; mono @ sigil in live red; border shifts to live red on focus-within; caret in live red; placeholder in faint ink.
-
-### Stamps
-1.5px bordered status marks, tracked uppercase, struck at −1.2deg. Live stamp in red, degraded stamp in deep red.
+Square, no radius. Primary: amber fill, ink text, 48–50px tall. Hover inverts to ink fill with paper text. Press scales to 0.98. Focus: 2px amber outline, 3px offset.
 
 ### Model rows
-Anchor-addressable ledger rows (rank, name + mono id, bar, mono readings, red arrow). Hovering the list dims siblings to 55% while the focused row lifts to soft paper; new results deploy in a short staged sequence (motion-safe only).
+Anchor-addressable ledger rows: rank, name and mono id, magnitude bar, tabular total with the 30-day figure beneath it, and an outbound arrow. Hovering the list dims siblings to 45% while the hovered row takes the panel ground. Rows deploy in a short staged sequence on arrival, motion-safe only.
 
-### Correction notice
-Deep-red boxed correction for the degraded-data state, with inline retry action.
+### Degraded state
+A correction box in alert red with an inline retry. The figure label switches to "All-time downloads · last published", the scope reads "global snapshot", and a failed lookup says "Could not check @user" rather than claiming no models were found. See `src/AGENTS.md`; this is a correctness contract, not a style choice.
+
+## Motion
+
+Three motions, all disabled under `prefers-reduced-motion`:
+1. **The tick.** Once per second the figure advances by whole-download arrivals drawn from the Poisson sampler in `api/stats-core.js`, and a new bar enters the channel. The total is `aria-live="off"`.
+2. **The deploy.** Creator rows rise 8px in a 40ms-staggered sequence when results arrive.
+3. **The entrance.** Sections fade up 22px on first paint only. It never replays on a scope change, and a 1.6s safety sweep reveals anything the observer missed so no section can be stranded invisible.
+
+Under reduced motion the ticker, the channel, Lenis smooth scroll, and the entrance all stand down, and the strip says "Trace paused · reduced motion".
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep red live: if it is red, it moves, erred, or acts (The One Red Rule).
-- **Do** set changing numbers tabular, always (The Tabular Numeral Rule).
-- **Do** let headings stand alone with no kicker (The No-Kicker Rule).
-- **Do** keep informative text at 4.5:1 or better — faint ink (#6b6252) is the floor.
-- **Do** theme browser surfaces (selection, caret, scrollbar, focus, underline offset) from the palette.
+- **Do** keep amber live: if it is amber, it moves, erred, or acts (The One Phosphor Rule)
+- **Do** set changing numbers tabular, always (The Tabular Numeral Rule)
+- **Do** keep the estimator note; it is what makes the live figure honest
+- **Do** verify contrast before adding a text token (The Contrast Floor)
+- **Do** theme browser surfaces (selection, caret, scrollbar, focus) from the palette
 
 ### Don't:
-- **Don't** build stat cards, eyebrows, or hero-metric headers — the figure plate and ledger own those jobs.
-- **Don't** add shadows, radii, gradients, or glass; the world is flat print.
-- **Don't** use mono for prose or the grotesque/serif interchangeably — serif argues, grotesque counts, mono measures.
-- **Don't** announce the ticking total to screen readers (`aria-live="off"`) or animate under `prefers-reduced-motion`.
+- **Don't** add stat cards, KPI tiles, eyebrows, or a hero-metric header
+- **Don't** add shadows, radii, gradients, glows, or glass
+- **Don't** band the arrival bars by value; the mean rule already encodes above and below
+- **Don't** label a fractional value column, or let a section separator become a wrapping divider
+- **Don't** announce the ticking total to screen readers, or animate under reduced motion
+- **Don't** let a degraded state imply a creator's totals
