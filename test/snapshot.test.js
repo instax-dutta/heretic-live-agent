@@ -88,3 +88,30 @@ test("the published snapshot is recent enough to trust", () => {
     + `the tolerance is ${MAX_SNAPSHOT_AGE_DAYS}. Run update-snapshot.mjs and check the scheduled workflow.`,
   );
 });
+
+test("the refresh workflow stages every file the updater writes", () => {
+  // The updater rewrites these files; the scheduled workflow commits by path.
+  // A path written but not staged is silently modified in the runner's working
+  // tree and never lands, which is the failure mode this guards.
+  const workflow = readFileSync(resolve(ROOT, ".github/workflows/update-snapshot.yml"), "utf8");
+  const updater = readFileSync(resolve(ROOT, "update-snapshot.mjs"), "utf8");
+
+  const written = [...updater.matchAll(/resolve\(ROOT, "([^"]+)"\)/g)].map((m) => m[1]);
+  const staged = workflow.match(/git add ([^\n]+)/)?.[1].split(/\s+/) ?? [];
+
+  assert.ok(written.length >= 3, "expected the updater to write at least three files");
+  for (const file of written) {
+    assert.ok(staged.includes(file), `update-snapshot.mjs writes ${file} but the workflow does not stage it`);
+  }
+});
+
+test("the sitemap lastmod tracks the published snapshot", () => {
+  const stamp = js.match(/const fallbackAsOf = "([^"]+)";/)[1];
+  const sitemap = readFileSync(resolve(ROOT, "public/sitemap.xml"), "utf8");
+
+  const lastmod = sitemap.match(/<lastmod>([^<]+)<\/lastmod>/)?.[1];
+  assert.ok(lastmod, "sitemap.xml has no lastmod");
+  // Same day is the contract: a stale lastmod contradicts a page whose
+  // published figures move twice a day.
+  assert.equal(lastmod.slice(0, 10), stamp.slice(0, 10));
+});
