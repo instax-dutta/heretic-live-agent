@@ -81,6 +81,8 @@ GET /api/stats
 GET /api/stats?username=<hugging-face-username>
 ```
 
+`HEAD` is supported and returns the same status and headers as `GET` with no body. `OPTIONS` answers preflight with `204 No Content`. Any other method returns `405`.
+
 Usernames may contain letters, numbers, periods, underscores, and hyphens, with a maximum length of 96 characters. The API returns public metadata only and does not access private repositories or require credentials.
 
 The API sets a 12-hour shared cache with stale-while-revalidate behavior. It supports cross-origin browser requests, returns CORS headers on normal and error responses, and answers `OPTIONS` preflight requests with `204 No Content`. If Hugging Face is unavailable, it returns an explicit degraded-data response while the frontend displays its published fallback snapshot.
