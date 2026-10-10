@@ -129,7 +129,17 @@ The site includes a lightweight crawlability and social-sharing layer:
 - `public/og-image.png` provides the compatible 1200×630 raster social preview asset.
 - `public/og-image.svg` is the editable source artwork for the PNG preview.
 
-The social metadata points to the PNG because Discord, WhatsApp, and some other link unfurlers do not reliably render SVG Open Graph images. The image uses the existing Heretic Live visual system as a dependency-free fallback. The requested Antigravity CLI was not available in the build environment, so no Antigravity-generated asset is claimed.
+The social metadata points to the PNG because Discord, WhatsApp, and some other link unfurlers do not reliably render SVG Open Graph images.
+
+### Social preview artwork
+
+`og-image.svg` is the single source of truth and `og-image.png` is rendered from it, so the two always agree.
+
+The card follows the current design system in `DESIGN.md`: near-black ground, phosphor amber, Space Grotesk for the statement, IBM Plex Mono for labels, and Spectral italic for the estimator note. Space Grotesk, IBM Plex Mono, and Spectral are embedded in the SVG as base64 WOFF2 so the artwork renders identically in any browser without a network font request.
+
+**The card carries no hardcoded totals.** The live figures refresh every 12 hours, and a link preview is the most screenshotted and most believed surface on the site, so any number baked into this artwork is a number that will go stale. The hero is the arrival strip instead: seeded Poisson draws around the real 30-day mean rate, shaped exactly as `sampleDownloadEvents` in `api/stats-core.js` shapes them. The instrument is the product's identity and never goes out of date. `og:image:alt` describes what the card actually shows.
+
+Provenance: the SVG was authored by hand to the design system above. The PNG was rendered from that SVG by headless Google Chrome at 1200×630, which resolves the embedded webfonts exactly as a browser would. No external image-generation service was used, and no Antigravity-generated asset is claimed.
 
 ## Repository hygiene
 

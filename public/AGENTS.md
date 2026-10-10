@@ -9,7 +9,7 @@ Files served verbatim at the site root. Crawler instructions, an AI-readable sum
 - `robots.txt` and `sitemap.xml` are the crawler surface
 - `llms.txt` is the AI-readable product and methodology summary
 - `favicon.svg` and `apple-touch-icon.png` are the browser icons
-- `og-image.svg` is the editable source artwork; `og-image.png` is the 1200 by 630 raster the Open Graph and Twitter tags actually reference
+- `og-image.svg` is the editable source artwork and the single source of truth; `og-image.png` is the 1200 by 630 raster rendered from it, and the file the Open Graph and Twitter tags actually reference
 - Owns no code. Nothing here is imported by the build
 
 ## Local Contracts
@@ -20,6 +20,8 @@ Files served verbatim at the site root. Crawler instructions, an AI-readable sum
 - `llms.txt` stays truthful about the real limitations: public metadata only, no authentication, no private repositories, and a degraded state when the upstream API is unavailable
 - Filenames are part of the live URL surface. Renaming one breaks published links, meta tags, or the sitemap. Add instead of renaming
 - Assets carry no build step. They are committed as authored
+- `og-image.svg` embeds Space Grotesk, IBM Plex Mono, and Spectral as base64 WOFF2 so it renders identically offline. Keep them embedded when editing; a `font-family` reference to a system or CDN font will silently fall back
+- `og-image.svg` carries no hardcoded totals. The hero is the arrival strip, not a figure, so the card never goes stale against a 12-hour dataset. Do not add a number back without also adding its as-of date
 
 ## Work Guidance
 
