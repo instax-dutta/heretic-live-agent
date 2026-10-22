@@ -10,8 +10,8 @@ const nf = new Intl.NumberFormat("en-US");
 // Published snapshot used when the upstream API is unreachable, and the only
 // figures a text-only retriever ever sees. Refreshed by update-snapshot.mjs;
 // `asOf` dates them so a stale snapshot is honest rather than merely wrong.
-const fallback = { modelCount: 8328, allTimeDownloads: 82511225, last30DaysDownloads: 13617365 };
-const fallbackAsOf = "2026-10-21T17:12:41.768Z";
+const fallback = { modelCount: 8334, allTimeDownloads: 82511228, last30DaysDownloads: 13617353 };
+const fallbackAsOf = "2026-10-22T04:45:43.007Z";
 // snapshot:end
 let state = { scope: "global", loading: true, error: "", data: null, lastUpdated: null, validation: "" };
 const requestGate = createRequestGate();
