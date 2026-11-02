@@ -24,7 +24,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Heretic Live" />
     <meta property="og:url" content="https://heretic.sdad.pro/" />
-    <meta property="og:title" content="Heretic Live: Heretic Model Download Count on Hugging Face" />
+    <meta property="og:title" content="Heretic Live: Heretic model download count on Hugging Face" />
     <meta property="og:description" content="Public Heretic model download statistics from the Hugging Face Hub: lifetime totals, 30-day activity, indexed model count, unique creator count, and creator lookup. Free, no login." />
     <meta property="og:image" content="https://heretic.sdad.pro/og-image.png" />
     <meta property="og:image:secure_url" content="https://heretic.sdad.pro/og-image.png" />
@@ -33,7 +33,7 @@
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="A typographic card on a near-black ground listing Models tracked, Unique creators, and Downloads. Reads: How far is Heretic spreading? and notes that every figure is summed from public Hugging Face metadata." />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Heretic Live: Heretic Model Download Count on Hugging Face" />
+    <meta name="twitter:title" content="Heretic Live: Heretic model download count on Hugging Face" />
     <meta name="twitter:description" content="Public Heretic model download statistics from the Hugging Face Hub: lifetime totals, 30-day activity, indexed model count, unique creator count, and creator lookup. Free, no login." />
     <meta name="twitter:image" content="https://heretic.sdad.pro/og-image.png" />
     <meta name="twitter:image:alt" content="A typographic card on a near-black ground listing Models tracked, Unique creators, and Downloads. Reads: How far is Heretic spreading? and notes that every figure is summed from public Hugging Face metadata." />
@@ -46,7 +46,7 @@
             "@id": "https://heretic.sdad.pro/#website",
             "url": "https://heretic.sdad.pro/",
             "name": "Heretic Live",
-            "description": "Public observability interface for the Heretic model ecosystem on Hugging Face.",
+            "description": "A public index of the Heretic model ecosystem on Hugging Face.",
             "inLanguage": "en"
           },
           {
@@ -54,7 +54,7 @@
             "@id": "https://heretic.sdad.pro/#application",
             "url": "https://heretic.sdad.pro/",
             "name": "Heretic Live",
-            "description": "Explore public Heretic model reach on Hugging Face with download intelligence, unique creator counts, and creator lookup.",
+            "description": "Explore public Heretic model reach on Hugging Face with download totals, unique creator counts, and creator lookup.",
             "applicationCategory": "DeveloperApplication",
             "operatingSystem": "Web Browser",
             "browserRequirements": "Requires JavaScript for current totals and creator lookup",
@@ -63,7 +63,7 @@
         ]
       }
     </script>
-    <title>Heretic Live: Heretic Model Download Count on Hugging Face</title>
+    <title>Heretic Live: Heretic model download count on Hugging Face</title>
   </head>
   <body>
     <div id="app">
@@ -123,8 +123,8 @@
                 <h2>How the index works</h2>
                 <p>Enable JavaScript for current totals and creator lookup.</p>
               </div>
-              <p class="methods-body">Heretic models are discovered in two passes over the public Hugging Face Hub API: repositories carrying the <code>heretic</code> tag, plus repositories with "heretic" in their name. The two result sets are merged and deduplicated by repository ID before any total is calculated, so the count favours coverage over a narrow snapshot of popular repositories.</p>
-              <p class="methods-body">The totals above are aggregate download counts for public repositories, published here and refreshed every 12 hours so a reader without JavaScript sees current figures. The <a href="/api/stats">JSON endpoint</a> is the authoritative machine-readable surface, carries an <code>updatedAt</code> timestamp, and accepts <code>?username=</code> for a creator-scoped readout. A summary for language models is at <a href="/llms.txt">/llms.txt</a>.</p>
+              <p class="methods-body">Heretic models are discovered in two passes over the public Hugging Face Hub API: repositories carrying the <code>heretic</code> tag, plus repositories with "heretic" in their name. The two result sets are merged and deduplicated by repository ID before any total is calculated, so the count favors coverage over a narrow snapshot of popular repositories.</p>
+              <p class="methods-body">The totals above are aggregate download counts for public repositories, published here and refreshed every 12 hours so a reader without JavaScript sees the latest published figures. The <a href="/api/stats">JSON endpoint</a> is the machine-readable source for these figures. It carries an <code>updatedAt</code> timestamp and accepts <code>?username=</code> for a creator-scoped readout. A summary for language models is at <a href="/llms.txt">/llms.txt</a>.</p>
               <p class="provenance">Heretic Live is an independent, unaffiliated third-party index. It is not operated or endorsed by the Heretic maintainers. The counting approach and the original reference figures come from <a href="https://github.com/p-e-w/heretic/issues/450">p-e-w/heretic#450</a>, and the upstream models themselves are at <a href="https://huggingface.co/models?search=heretic">huggingface.co/models?search=heretic</a>.</p>
             </div>
           </section>

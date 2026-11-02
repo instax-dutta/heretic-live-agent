@@ -1,16 +1,16 @@
 # Heretic Live
 
-> Independent third-party telemetry for the Heretic model ecosystem on Hugging Face. Heretic Live is not affiliated with, endorsed by, or operated by the Heretic maintainers (p-e-w/heretic).
+> Independent third-party index for the Heretic model ecosystem on Hugging Face. Heretic Live is not affiliated with, endorsed by, or operated by the Heretic maintainers (p-e-w/heretic).
 
-Heretic Live is a continuously refreshed count of public Heretic models on
+Heretic Live is a regularly refreshed count of public Heretic models on
 Hugging Face, their combined downloads, and the number of creators publishing
-them. It answers one recurring question about the upstream project: how many
-public Heretic models exist, how widely are they distributed, and how many
-publishers sit behind them?
+them. It answers a recurring question about the upstream project: how many
+public Heretic models exist, how widely they are distributed, and how many
+creators publish them?
 
 Figures are published in the HTML of the homepage so text-only agents can read
-them, and are refreshed every 12 hours. The JSON endpoint is the authoritative
-machine-readable surface and carries an `updatedAt` timestamp.
+them, and are refreshed every 12 hours. The JSON endpoint is the machine-readable source and
+carries an `updatedAt` timestamp.
 
 ## Key URLs
 
@@ -58,7 +58,7 @@ never tagged. That is why both passes run.
 
 Creator queries return that creator's ranked public models with lifetime and
 recent downloads. There is no authentication, no account, and no private
-repository access on any surface.
+repository access on the site or the API.
 
 ## Limitations
 
