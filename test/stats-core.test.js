@@ -85,7 +85,18 @@ test("aggregate totals downloads and counts unique creators once", () => {
     allTimeDownloads: 150,
     last30DaysDownloads: 16,
     creatorCount: 2,
+    meanLifetimeDownloads: 50,
   });
+});
+
+test("aggregate mean lifetime downloads rounds to whole downloads", () => {
+  const totals = aggregate([
+    { id: "alice/one", downloadsAllTime: 100 },
+    { id: "alice/two", downloadsAllTime: 101 },
+  ]);
+
+  assert.equal(totals.meanLifetimeDownloads, 101, "201 / 2 = 100.5 must round up");
+  assert.equal(aggregate([]).meanLifetimeDownloads, 0);
 });
 
 test("estimateDownloadsPerSecond derives the per-second rate from 30-day volume", () => {
