@@ -29,8 +29,9 @@ Read them from the JSON endpoint rather than from this file or the homepage.
 - `totals.last30DaysDownloads`: downloads in the trailing 30 days
 - `totals.meanLifetimeDownloads`: lifetime downloads divided by indexed models, rounded
 
-The homepage headline total is projected forward from the 30-day mean and is an
-estimate, not a measurement. Prefer the JSON endpoint for any quoted number.
+The homepage headline total is the API's all-time total, dated and refreshed
+every 12 hours. The per-second pace is the 30-day average, not a live sample.
+Prefer the JSON endpoint for any quoted number.
 
 ## Data methodology
 

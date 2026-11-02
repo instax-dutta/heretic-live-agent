@@ -122,7 +122,7 @@ if (published && new Date(published).getTime() > stamp.getTime()) {
 let html = htmlBefore;
 const htmlRegions = [
   ["asof", `<time datetime="${iso.slice(0, 19)}Z">as of ${day}</time>`],
-  ["lifetime", `<p class="live-total">${nf.format(totals.allTimeDownloads)}</p>`],
+  ["lifetime", `<p class="figure-total">${nf.format(totals.allTimeDownloads)}</p>`],
   ["d30", `<span class="row-value">${nf.format(totals.last30DaysDownloads)}</span>`],
   ["share", `<span class="row-note">${share}% of lifetime volume is recent</span>`],
   ["models", `<span class="row-value">${nf.format(totals.modelCount)}</span>`],

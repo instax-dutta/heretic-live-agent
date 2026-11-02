@@ -31,12 +31,12 @@
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="A strip chart of sampled Heretic model download arrivals per second on a near-black ground, with a 30-day mean line. Reads: How far is Heretic spreading?" />
+    <meta property="og:image:alt" content="A typographic card on a near-black ground listing Models tracked, Unique creators, and Downloads. Reads: How far is Heretic spreading? and notes that every figure is summed from public Hugging Face metadata." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Heretic Live: Heretic Model Download Count on Hugging Face" />
     <meta name="twitter:description" content="Public Heretic model download statistics from the Hugging Face Hub: lifetime totals, 30-day activity, indexed model count, unique creator count, and creator lookup. Free, no login." />
     <meta name="twitter:image" content="https://heretic.sdad.pro/og-image.png" />
-    <meta name="twitter:image:alt" content="A strip chart of sampled Heretic model download arrivals per second on a near-black ground, with a 30-day mean line. Reads: How far is Heretic spreading?" />
+    <meta name="twitter:image:alt" content="A typographic card on a near-black ground listing Models tracked, Unique creators, and Downloads. Reads: How far is Heretic spreading? and notes that every figure is summed from public Hugging Face metadata." />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -57,7 +57,7 @@
             "description": "Explore public Heretic model reach on Hugging Face with download intelligence, unique creator counts, and creator lookup.",
             "applicationCategory": "DeveloperApplication",
             "operatingSystem": "Web Browser",
-            "browserRequirements": "Requires JavaScript for live totals and creator lookup",
+            "browserRequirements": "Requires JavaScript for current totals and creator lookup",
             "isPartOf": { "@id": "https://heretic.sdad.pro/#website" }
           }
         ]
@@ -86,11 +86,11 @@
             <div class="figure-l">
               <p class="fig-label">All-time downloads</p>
                             <!-- snapshot:lifetime -->
-                            <p class="live-total">88,600,442</p>
+                            <p class="figure-total">88,600,442</p>
                             <!-- /snapshot:lifetime -->
               <p class="figure-sub">Combined downloads across all indexed models</p>
             </div>
-            <p class="estimator-note"><span>The live total is an estimate, not a measurement. These are the last published figures.</span></p>
+            <p class="estimator-note"><span>All-time downloads are summed from public Hugging Face metadata. These are the last published figures, refreshed every 12 hours.</span></p>
           </section>
           <ul class="rows">
             <li class="row">
@@ -121,7 +121,7 @@
             <div class="methods-copy">
               <div class="section-head">
                 <h2>How the index works</h2>
-                <p>Enable JavaScript for live totals and creator lookup.</p>
+                <p>Enable JavaScript for current totals and creator lookup.</p>
               </div>
               <p class="methods-body">Heretic models are discovered in two passes over the public Hugging Face Hub API: repositories carrying the <code>heretic</code> tag, plus repositories with "heretic" in their name. The two result sets are merged and deduplicated by repository ID before any total is calculated, so the count favours coverage over a narrow snapshot of popular repositories.</p>
               <p class="methods-body">The totals above are aggregate download counts for public repositories, published here and refreshed every 12 hours so a reader without JavaScript sees current figures. The <a href="/api/stats">JSON endpoint</a> is the authoritative machine-readable surface, carries an <code>updatedAt</code> timestamp, and accepts <code>?username=</code> for a creator-scoped readout. A summary for language models is at <a href="/llms.txt">/llms.txt</a>.</p>

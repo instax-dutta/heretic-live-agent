@@ -1,5 +1,5 @@
 import Lenis from "lenis";
-import { createRequestGate, estimateDownloadsPerSecond, sampleDownloadEvents } from "../api/stats-core.js";
+import { createRequestGate, estimateDownloadsPerSecond } from "../api/stats-core.js";
 import { getFigureLabels } from "../shared/figure.js";
 import { isValidUsername, normalizeUsername } from "../shared/username.js";
 
@@ -16,19 +16,6 @@ const fallbackAsOf = "2026-11-02T08:03:09.684Z";
 let state = { scope: "global", loading: true, error: "", data: null, lastUpdated: null, validation: "" };
 const requestGate = createRequestGate();
 
-/* -------------------------------------------------------------------------
-   Live arrival sampling.
-
-   `arrivals` is a rolling window of whole-download counts, one per second,
-   drawn by the same Poisson sampler the API core is tested against. The strip
-   renders that window directly: it is the estimator's own variance, not a
-   decorative trace. Nothing here is invented beyond the real 30-day rate.
-   ------------------------------------------------------------------------- */
-const STRIP_LENGTH = 90;
-let arrivals = [];
-let liveTickerId = null;
-let liveBase = null;
-let lastTickerKey = "";
 let entranceDone = false;
 let scrollObserver = null;
 
@@ -76,123 +63,10 @@ function snapshotStamp() {
 
 function formatRate(rate) {
   if (!Number.isFinite(rate) || rate < 0.1) return "";
-  // Whole downloads only: the pace is a count of events per second, and a
-  // fractional "download" does not exist. Sub-1 rates keep one decimal so
+  // The pace is a 30-day average. Whole values above 1; one decimal below so
   // quiet creator views still read honestly instead of rounding to zero.
   if (rate < 1) return rate.toFixed(1);
   return String(Math.max(1, Math.round(rate)));
-}
-
-/* The strip's vertical scale is anchored to the mean rather than to the
-   largest sample, so the mean rule never moves and above/below-average
-   seconds stay comparable across sessions and across scopes. */
-function stripScale(rate) {
-  return Math.max(3, Math.ceil(rate * 2.2));
-}
-
-/* The channel is drawn at full width from the first paint: 90 baseline ticks,
-   the oldest ones fading in as the window fills. Without them a fresh visit
-   shows a large empty box for the first 90 seconds and reads as a broken
-   render rather than as an instrument that has not recorded anything yet. */
-function renderColumns(rate) {
-  const scale = stripScale(rate);
-  const slots = Math.max(STRIP_LENGTH, arrivals.length);
-  let out = "";
-  for (let i = 0; i < slots; i += 1) {
-    const idx = i - (slots - arrivals.length);
-    if (idx < 0) {
-      out += '<span class="slot"></span>';
-      continue;
-    }
-    const count = arrivals[idx];
-    const newest = idx === arrivals.length - 1 ? " now" : "";
-    const height = count === 0 ? 2 : Math.min(100, (count / scale) * 100);
-    out += `<span class="slot${newest}"><i style="height:${height.toFixed(1)}%"></i></span>`;
-  }
-  return out;
-}
-
-// Left edge reads the real elapsed window, so a partly filled channel is
-// self-explanatory instead of looking like missing data.
-function stripSpanLabel() {
-  if (!arrivals.length) return "waiting";
-  return arrivals.length >= STRIP_LENGTH ? `${STRIP_LENGTH} s ago` : `${arrivals.length} s ago`;
-}
-
-function renderStrip(rate) {
-  const scale = stripScale(rate);
-  const meanLeft = pct(rate, scale);
-
-  if (prefersReducedMotion()) {
-    return `<section class="strip paused">
-      <div class="strip-head">
-        <span class="strip-title">Sampled arrivals per second</span>
-        <span class="paused-note">Trace paused · reduced motion</span>
-      </div>
-      <div class="plot" aria-hidden="true">
-        <div class="mean-line" style="left:${meanLeft.toFixed(2)}%"></div>
-      </div>
-      <div class="strip-foot"><span>30-day mean ${rate ? formatRate(rate) + "/sec" : "unavailable"}</span><span>not recording</span></div>
-    </section>`;
-  }
-
-  return `<section class="strip">
-    <div class="strip-head">
-      <span class="strip-title">Sampled arrivals per second</span>
-      <span class="strip-mean">30-day mean ${rate ? formatRate(rate) + "/sec" : "unavailable"}</span>
-    </div>
-    <div class="plot" aria-hidden="true">
-      <div class="mean-line" style="left:${meanLeft.toFixed(2)}%"></div>
-      <div class="cols">${renderColumns(rate)}</div>
-    </div>
-    <div class="strip-foot"><span>${stripSpanLabel()}</span><span>Now</span></div>
-  </section>`;
-}
-
-// The window grows one sample per tick and holds at 90, so the column count
-// changes constantly. Rebuild rather than patch: matching children by index
-// silently leaves a growing gap whenever the buffer and DOM drift apart.
-function paintStrip(rate) {
-  const cols = document.querySelector(".strip .cols");
-  if (!cols) return;
-  cols.innerHTML = renderColumns(rate);
-}
-
-function stopLiveTicker() {
-  if (liveTickerId !== null) {
-    clearInterval(liveTickerId);
-    liveTickerId = null;
-  }
-  liveBase = null;
-}
-
-function startLiveTicker(totals) {
-  stopLiveTicker();
-  if (prefersReducedMotion()) return;
-  const rate = estimateDownloadsPerSecond(totals?.last30DaysDownloads);
-  if (!rate || rate <= 0) return;
-  // Anchor the estimate at render time: the API total is a point-in-time
-  // snapshot (refreshed every 12h), so we count forward from display time.
-  // Each tick draws whole-download arrivals from the 30-day mean rate, so the
-  // figure jumps the way real traffic does instead of creeping fractionally.
-  liveBase = { total: Number(totals.allTimeDownloads || 0), rate, lastTick: Date.now() };
-  if (typeof setInterval !== "function") return;
-  liveTickerId = setInterval(() => {
-    const el = document.querySelector("#live-total");
-    if (!el || !liveBase) {
-      stopLiveTicker();
-      return;
-    }
-    const now = Date.now();
-    const elapsedSeconds = (now - liveBase.lastTick) / 1000;
-    liveBase.lastTick = now;
-    const events = sampleDownloadEvents(liveBase.rate, elapsedSeconds);
-    liveBase.total += events;
-    arrivals.push(events);
-    if (arrivals.length > STRIP_LENGTH) arrivals.shift();
-    el.textContent = format(liveBase.total);
-    paintStrip(liveBase.rate);
-  }, 1000);
 }
 
 function initSmoothScroll() {
@@ -221,8 +95,8 @@ function render() {
   const recentShare = totals.allTimeDownloads
     ? ((totals.last30DaysDownloads / totals.allTimeDownloads) * 100).toFixed(1)
     : "0.0";
-  const liveRate = estimateDownloadsPerSecond(totals.last30DaysDownloads);
-  const liveRateLabel = formatRate(liveRate);
+  const paceRate = estimateDownloadsPerSecond(totals.last30DaysDownloads);
+  const paceLabel = formatRate(paceRate);
   const figure = getFigureLabels({
     isUser: creatorScope,
     username: escapeHtml(username),
@@ -236,8 +110,7 @@ function render() {
       <aside class="rail">
         <a class="rail-mark" href="/" aria-label="Heretic Live home">Heretic <em>/</em> Live</a>
         <div class="rail-foot">
-          ${liveRateLabel ? '<span class="live-dot" aria-hidden="true"></span>' : ""}
-          <span class="rail-tag">${liveRateLabel ? "Live · 30-day pace" : "Live · public index"}</span>
+          <span class="rail-tag">${paceLabel ? "30-day pace" : "Public index"}</span>
         </div>
       </aside>
 
@@ -249,24 +122,18 @@ function render() {
           </p>
         </header>
 
-        ${renderStrip(liveRate)}
-
         <section class="figure reveal" aria-labelledby="fig-label">
           <div class="figure-l">
             <p class="fig-label" id="fig-label">${figLabel}</p>
-            <p class="live-total" id="live-total" aria-live="off" aria-atomic="false">${format(totals.allTimeDownloads)}</p>
+            <p class="figure-total">${format(totals.allTimeDownloads)}</p>
             <div class="pace">
-              ${liveRateLabel ? '<span class="live-dot" aria-hidden="true"></span>' : ""}
-              ${liveRateLabel ? `+${liveRateLabel}/sec` : "Pace unavailable for this view"}
-              <span>· extrapolated from the 30-day mean</span>
+              ${paceLabel ? `+${paceLabel}/sec <span>· 30-day average</span>` : "Pace unavailable for this view"}
             </div>
             <p class="figure-sub">${figure.plateFoot}</p>
           </div>
           <p class="estimator-note"><span>${degraded
-            ? "These are the last published figures, not a live read. The live total is an estimate, never a measurement."
-            : prefersReducedMotion()
-              ? "The live total is an estimate, not a measurement. The arrival trace is paused because your system asks for reduced motion."
-              : "The live total is an estimate, not a measurement. The spread above is the estimator's own variance."}</span></p>
+            ? "These are the last published figures. The upstream API is unavailable, so they are dated rather than current."
+            : "All-time downloads are summed from public Hugging Face metadata and refreshed every 12 hours."}</span></p>
         </section>
 
         <ul class="rows reveal">
@@ -304,7 +171,7 @@ function render() {
           </form>
         </section>
 
-        ${state.error ? `<div class="correction reveal" role="status"><strong>Correction — live refresh unavailable.</strong> The latest published snapshot is still shown.<button data-action="retry" type="button">Retry connection</button></div>` : ""}
+        ${state.error ? `<div class="correction reveal" role="status"><strong>Correction — refresh unavailable.</strong> The latest published snapshot is still shown.<button data-action="retry" type="button">Retry connection</button></div>` : ""}
         ${isUser && state.loading ? renderLoading(username) : ""}
         ${isUser && !state.loading && degraded
           ? renderUnavailable(username)
@@ -328,14 +195,6 @@ function render() {
     el.addEventListener("click", () => fetchStats(state.scope === "user" ? username : undefined)));
   document.querySelectorAll('[data-action="clear"]').forEach((el) =>
     el.addEventListener("click", () => fetchStats()));
-  // Restarting re-anchors to the snapshot and drops accrued arrivals, so only
-  // restart when the underlying totals actually changed (new data or new scope).
-  const tickerKey = `${totals.allTimeDownloads}|${totals.last30DaysDownloads}|${totals.modelCount}`;
-  if (tickerKey !== lastTickerKey) {
-    lastTickerKey = tickerKey;
-    arrivals = [];
-    startLiveTicker(totals);
-  }
   revealOnScroll();
 }
 

@@ -4,7 +4,7 @@ Heretic Live is a public observability interface for the Heretic model ecosystem
 
 ## Features
 
-- Global all-time download totals with a live ticker: whole-download arrivals sampled per second from the rolling 30-day pace
+- Global all-time download totals, summed from public Hub metadata and refreshed every 12 hours
 - Rolling 30-day download totals
 - Creator-scoped figure labels: lookups re-caption the figure to the creator so user totals are never presented as global
 - Lenis smooth scrolling (skipped under reduced-motion preferences)
@@ -101,7 +101,7 @@ node --check api/stats-core.js
 npm audit --audit-level=high
 ```
 
-The tests cover pagination, expansion parameters, deduplication, ranking, aggregate totals, unique-creator counting, live-rate estimation, discrete-arrival sampling, figure scope labels, username validation, stale-request protection, cache policy, HTTP method handling, and CORS preflight behavior.
+The tests cover pagination, expansion parameters, deduplication, ranking, aggregate totals, unique-creator counting, 30-day rate estimation, figure scope labels, username validation, stale-request protection, cache policy, HTTP method handling, and CORS preflight behavior.
 
 ## Deployment to Vercel
 
@@ -140,9 +140,9 @@ The social metadata points to the PNG because Discord, WhatsApp, and some other 
 
 `og-image.svg` is the single source of truth and `og-image.png` is rendered from it, so the two always agree.
 
-The card follows the current design system in `DESIGN.md`: near-black ground, phosphor amber, Space Grotesk for the statement, IBM Plex Mono for labels, and Spectral italic for the estimator note. Space Grotesk, IBM Plex Mono, and Spectral are embedded in the SVG as base64 WOFF2 so the artwork renders identically in any browser without a network font request.
+The card follows the current design system in `DESIGN.md`: near-black ground, phosphor amber, Space Grotesk for the statement, IBM Plex Mono for labels, and Spectral italic for the provenance note. Space Grotesk, IBM Plex Mono, and Spectral are embedded in the SVG as base64 WOFF2 so the artwork renders identically in any browser without a network font request.
 
-**The card carries no hardcoded totals.** The live figures refresh every 12 hours, and a link preview is the most screenshotted and most believed surface on the site, so any number baked into this artwork is a number that will go stale. The hero is the arrival strip instead: seeded Poisson draws around the real 30-day mean rate, shaped exactly as `sampleDownloadEvents` in `api/stats-core.js` shapes them. The instrument is the product's identity and never goes out of date. `og:image:alt` describes what the card actually shows.
+**The card carries no hardcoded totals.** The figures refresh every 12 hours, and a link preview is the most screenshotted and most believed surface on the site, so any number baked into this artwork is a number that will go stale. The hero is the three register labels - Models tracked, Unique creators, Downloads - plus a note that every figure is summed from public Hugging Face metadata. Nothing is sampled or projected, so the card never goes stale. `og:image:alt` describes what the card actually shows.
 
 Provenance: the SVG was authored by hand to the design system above. The PNG was rendered from that SVG by headless Google Chrome at 1200×630, which resolves the embedded webfonts exactly as a browser would. No external image-generation service was used, and no Antigravity-generated asset is claimed.
 
