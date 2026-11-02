@@ -182,6 +182,7 @@ test("publishes creatorCount with the aggregate totals", async () => {
       creatorCount: 2,
       allTimeDownloads: 150,
       last30DaysDownloads: 16,
+      meanLifetimeDownloads: 50,
     });
     assert.equal(response.body.scope, "global");
     assert.equal(response.body.models, undefined, "the global view omits models");

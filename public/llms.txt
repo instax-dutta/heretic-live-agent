@@ -27,6 +27,7 @@ Read them from the JSON endpoint rather than from this file or the homepage.
 - `totals.creatorCount`: distinct Hugging Face accounts and organizations publishing them
 - `totals.allTimeDownloads`: combined lifetime downloads
 - `totals.last30DaysDownloads`: downloads in the trailing 30 days
+- `totals.meanLifetimeDownloads`: lifetime downloads divided by indexed models, rounded
 
 The homepage headline total is projected forward from the 30-day mean and is an
 estimate, not a measurement. Prefer the JSON endpoint for any quoted number.
@@ -49,6 +50,7 @@ never tagged. That is why both passes run.
 - `creatorCount`: distinct `namespace` prefixes across those repositories; one publisher with many models counts once.
 - `allTimeDownloads`: sum of Hub `downloadsAllTime` across indexed repositories.
 - `last30DaysDownloads`: sum of the Hub rolling 30-day `downloads` counter.
+- `meanLifetimeDownloads`: `allTimeDownloads / modelCount`, rounded to a whole download. API-only; not shown in the page.
 - `updatedAt`: ISO-8601 timestamp of the snapshot.
 - `source`: provenance string for the underlying query.
 - `scope`: `global` or `user`.

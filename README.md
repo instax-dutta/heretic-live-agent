@@ -62,7 +62,7 @@ The API performs two Hugging Face model searches:
 1. Repositories carrying the `heretic` tag
 2. Repositories whose model name contains `heretic`
 
-Both searches follow Hugging Face cursor pagination up to a bounded safety limit. Results are merged and deduplicated by repository ID before totals are calculated. Creator results are sorted by lifetime downloads. The aggregate also reports the number of distinct publishing namespaces, so one creator with many repositories counts once.
+Both searches follow Hugging Face cursor pagination up to a bounded safety limit. Results are merged and deduplicated by repository ID before totals are calculated. Creator results are sorted by lifetime downloads. The aggregate also reports the number of distinct publishing namespaces, so one creator with many repositories counts once, and the mean lifetime downloads per indexed model. The mean is an API field only and is not rendered in the interface.
 
 The methodology is based on the public Heretic discussion and reference material available in [p-e-w/heretic issue #450](https://github.com/p-e-w/heretic/issues/450).
 

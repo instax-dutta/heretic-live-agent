@@ -83,7 +83,13 @@ export function aggregate(models) {
       last30DaysDownloads: totals.last30DaysDownloads + Number(model.downloads || 0),
     };
   }, { modelCount: 0, allTimeDownloads: 0, last30DaysDownloads: 0 });
-  return { ...totals, creatorCount: creators.size };
+  return {
+    ...totals,
+    creatorCount: creators.size,
+    meanLifetimeDownloads: totals.modelCount
+      ? Math.round(totals.allTimeDownloads / totals.modelCount)
+      : 0,
+  };
 }
 
 export function createRequestGate() {
