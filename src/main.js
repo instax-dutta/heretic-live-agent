@@ -171,7 +171,7 @@ function render() {
           </form>
         </section>
 
-        ${state.error ? `<div class="correction reveal" role="status"><strong>Correction — refresh unavailable.</strong> The latest published snapshot is still shown.<button data-action="retry" type="button">Retry connection</button></div>` : ""}
+        ${state.error ? `<div class="correction reveal" role="status"><strong>Correction: refresh unavailable.</strong> The latest published snapshot is still shown.<button data-action="retry" type="button">Retry connection</button></div>` : ""}
         ${isUser && state.loading ? renderLoading(username) : ""}
         ${isUser && !state.loading && degraded
           ? renderUnavailable(username)
@@ -247,8 +247,8 @@ function renderMethod() {
         <h2 id="method-title">How the index works</h2>
         <p>The count favors coverage over a narrow snapshot of popular repositories.</p>
       </div>
-      <p class="methods-body">Heretic models are discovered in two passes over the public Hugging Face Hub API: repositories carrying the <code>heretic</code> tag, plus repositories with "heretic" in their name. The two result sets are merged and deduplicated by repository ID before any total is calculated, so the count favors coverage over a narrow snapshot of popular repositories.</p>
-      <p class="methods-body">The totals above are aggregate download counts for public repositories. The <a href="/api/stats" rel="noreferrer">JSON endpoint</a> is the authoritative machine-readable surface, carries an <code>updatedAt</code> timestamp, and accepts <code>?username=</code> for a creator-scoped readout. A summary for language models is at <a href="/llms.txt" rel="noreferrer">/llms.txt</a>.</p>
+      <p class="methods-body">Heretic models are discovered in two passes over the public Hugging Face Hub API: repositories carrying the <code>heretic</code> tag, plus repositories with "heretic" in their name. The two result sets are merged and deduplicated by repository ID before any total is calculated.</p>
+      <p class="methods-body">The totals above are aggregate download counts for public repositories. The <a href="/api/stats" rel="noreferrer">JSON endpoint</a> is the machine-readable source for these figures. It carries an <code>updatedAt</code> timestamp and accepts <code>?username=</code> for a creator-scoped readout. A summary for language models is at <a href="/llms.txt" rel="noreferrer">/llms.txt</a>.</p>
       <p class="provenance">Heretic Live is an independent, unaffiliated third-party index. It is not operated or endorsed by the Heretic maintainers. The counting approach and the original reference figures come from <a href="https://github.com/p-e-w/heretic/issues/450" target="_blank" rel="noreferrer">p-e-w/heretic#450</a>, and the upstream models themselves are at <a href="https://huggingface.co/models?search=heretic" target="_blank" rel="noreferrer">huggingface.co/models?search=heretic</a>.</p>
     </div>
     <ol class="method-list" aria-label="Index methodology">
