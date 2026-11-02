@@ -14,7 +14,7 @@
     />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="googlebot" content="index, follow, max-image-preview:large" />
-    <meta name="description" content="Public Heretic model download statistics from the Hugging Face Hub: lifetime totals, 30-day activity, indexed model count, and creator lookup. Free, no login." />
+    <meta name="description" content="Public Heretic model download statistics from the Hugging Face Hub: lifetime totals, 30-day activity, indexed model count, unique creator count, and creator lookup. Free, no login." />
     <link rel="canonical" href="https://heretic.sdad.pro/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -25,7 +25,7 @@
     <meta property="og:site_name" content="Heretic Live" />
     <meta property="og:url" content="https://heretic.sdad.pro/" />
     <meta property="og:title" content="Heretic Live: Heretic Model Download Count on Hugging Face" />
-    <meta property="og:description" content="Public Heretic model download statistics from the Hugging Face Hub: lifetime totals, 30-day activity, indexed model count, and creator lookup. Free, no login." />
+    <meta property="og:description" content="Public Heretic model download statistics from the Hugging Face Hub: lifetime totals, 30-day activity, indexed model count, unique creator count, and creator lookup. Free, no login." />
     <meta property="og:image" content="https://heretic.sdad.pro/og-image.png" />
     <meta property="og:image:secure_url" content="https://heretic.sdad.pro/og-image.png" />
     <meta property="og:image:type" content="image/png" />
@@ -34,7 +34,7 @@
     <meta property="og:image:alt" content="A strip chart of sampled Heretic model download arrivals per second on a near-black ground, with a 30-day mean line. Reads: How far is Heretic spreading?" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Heretic Live: Heretic Model Download Count on Hugging Face" />
-    <meta name="twitter:description" content="Public Heretic model download statistics from the Hugging Face Hub: lifetime totals, 30-day activity, indexed model count, and creator lookup. Free, no login." />
+    <meta name="twitter:description" content="Public Heretic model download statistics from the Hugging Face Hub: lifetime totals, 30-day activity, indexed model count, unique creator count, and creator lookup. Free, no login." />
     <meta name="twitter:image" content="https://heretic.sdad.pro/og-image.png" />
     <meta name="twitter:image:alt" content="A strip chart of sampled Heretic model download arrivals per second on a near-black ground, with a 30-day mean line. Reads: How far is Heretic spreading?" />
     <script type="application/ld+json">
@@ -54,7 +54,7 @@
             "@id": "https://heretic.sdad.pro/#application",
             "url": "https://heretic.sdad.pro/",
             "name": "Heretic Live",
-            "description": "Explore public Heretic model reach on Hugging Face with download intelligence and creator lookup.",
+            "description": "Explore public Heretic model reach on Hugging Face with download intelligence, unique creator counts, and creator lookup.",
             "applicationCategory": "DeveloperApplication",
             "operatingSystem": "Web Browser",
             "browserRequirements": "Requires JavaScript for live totals and creator lookup",
@@ -78,7 +78,7 @@
             <p class="dateline">Public model index · Hugging Face Hub API<br>
                             <span class="scope-tag">global index</span> ·
               <!-- snapshot:asof -->
-              <time datetime="2026-11-02T06:02:13Z">as of 2026-11-02</time>
+              <time datetime="2026-11-02T08:03:09Z">as of 2026-11-02</time>
               <!-- /snapshot:asof -->
             </p>
           </header>
@@ -86,7 +86,7 @@
             <div class="figure-l">
               <p class="fig-label">All-time downloads</p>
                             <!-- snapshot:lifetime -->
-                            <p class="live-total">88,600,726</p>
+                            <p class="live-total">88,600,442</p>
                             <!-- /snapshot:lifetime -->
               <p class="figure-sub">Combined downloads across all indexed models</p>
             </div>
@@ -96,7 +96,7 @@
             <li class="row">
               <span class="row-label">Last 30 days</span>
                             <!-- snapshot:d30 -->
-                            <span class="row-value">14,279,023</span>
+                            <span class="row-value">14,279,009</span>
                             <!-- /snapshot:d30 -->
               <!-- snapshot:share -->
               <span class="row-note">16.1% of lifetime volume is recent</span>
@@ -105,9 +105,16 @@
             <li class="row">
               <span class="row-label">Models tracked</span>
                             <!-- snapshot:models -->
-                            <span class="row-value">8,611</span>
+                            <span class="row-value">8,612</span>
                             <!-- /snapshot:models -->
               <span class="row-note">Tag and name discovery, deduplicated by repository ID</span>
+            </li>
+            <li class="row">
+              <span class="row-label">Unique creators</span>
+                            <!-- snapshot:creators -->
+                            <span class="row-value">1,820</span>
+                            <!-- /snapshot:creators -->
+              <span class="row-note">Distinct Hugging Face accounts and organizations publishing the indexed repositories</span>
             </li>
           </ul>
           <section class="methods">

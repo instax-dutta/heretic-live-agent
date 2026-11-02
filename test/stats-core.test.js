@@ -73,16 +73,18 @@ test("createRequestGate only accepts the most recent request", () => {
   assert.equal(gate.isCurrent(second), true);
 });
 
-test("aggregate totals numeric download values without mutating models", () => {
+test("aggregate totals downloads and counts unique creators once", () => {
   const models = [
-    { downloads: 12, downloadsAllTime: 100 },
-    { downloads: 3, downloadsAllTime: 40 },
+    { id: "alice/one", downloads: 12, downloadsAllTime: 100 },
+    { id: "alice/two", downloads: 3, downloadsAllTime: 40 },
+    { id: "bob/three", downloads: 1, downloadsAllTime: 10 },
   ];
 
   assert.deepEqual(aggregate(models), {
-    modelCount: 2,
-    allTimeDownloads: 140,
-    last30DaysDownloads: 15,
+    modelCount: 3,
+    allTimeDownloads: 150,
+    last30DaysDownloads: 16,
+    creatorCount: 2,
   });
 });
 

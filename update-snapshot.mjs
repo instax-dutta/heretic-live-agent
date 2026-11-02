@@ -91,9 +91,10 @@ async function fetchSnapshot() {
   const t = data?.totals;
   const sane = t
     && Number.isFinite(t.modelCount) && t.modelCount > 0
+    && Number.isFinite(t.creatorCount) && t.creatorCount > 0
     && Number.isFinite(t.allTimeDownloads) && t.allTimeDownloads > 0
     && Number.isFinite(t.last30DaysDownloads);
-  if (!sane) fail(`${API} returned a malformed totals block`);
+  if (!sane) fail(`${API} returned a malformed totals block (needs modelCount, creatorCount, allTimeDownloads, last30DaysDownloads)`);
   if (!data.updatedAt || !Number.isFinite(new Date(data.updatedAt).getTime())) {
     fail(`${API} returned an unusable updatedAt timestamp`);
   }
@@ -125,6 +126,7 @@ const htmlRegions = [
   ["d30", `<span class="row-value">${nf.format(totals.last30DaysDownloads)}</span>`],
   ["share", `<span class="row-note">${share}% of lifetime volume is recent</span>`],
   ["models", `<span class="row-value">${nf.format(totals.modelCount)}</span>`],
+  ["creators", `<span class="row-value">${nf.format(totals.creatorCount)}</span>`],
 ];
 for (const [name, inner] of htmlRegions) {
   html = replaceMarkedRegion(html, `<!-- snapshot:${name} -->`, `<!-- /snapshot:${name} -->`, [inner]);
@@ -134,7 +136,7 @@ const js = replaceMarkedRegion(jsBefore, "// snapshot:start", "// snapshot:end",
   "// Published snapshot used when the upstream API is unreachable, and the only",
   "// figures a text-only retriever ever sees. Refreshed by update-snapshot.mjs;",
   "// `asOf` dates them so a stale snapshot is honest rather than merely wrong.",
-  `const fallback = { modelCount: ${totals.modelCount}, allTimeDownloads: ${totals.allTimeDownloads}, last30DaysDownloads: ${totals.last30DaysDownloads} };`,
+  `const fallback = { modelCount: ${totals.modelCount}, creatorCount: ${totals.creatorCount}, allTimeDownloads: ${totals.allTimeDownloads}, last30DaysDownloads: ${totals.last30DaysDownloads} };`,
   `const fallbackAsOf = "${iso}";`,
 ]);
 
@@ -154,6 +156,7 @@ const changed = html !== htmlBefore || js !== jsBefore || sitemap !== sitemapBef
 if (DRY_RUN) {
   console.log("update-snapshot: dry run, no files written");
   console.log(`  models ${nf.format(totals.modelCount)}`);
+  console.log(`  creators ${nf.format(totals.creatorCount)}`);
   console.log(`  lifetime ${nf.format(totals.allTimeDownloads)}`);
   console.log(`  30 days ${nf.format(totals.last30DaysDownloads)} (${share}%)`);
   console.log(`  as of ${iso}`);
@@ -170,4 +173,4 @@ writeFileSync(resolve(ROOT, "index.html"), html);
 writeFileSync(resolve(ROOT, "src/main.js"), js);
 writeFileSync(resolve(ROOT, "public/sitemap.xml"), sitemap);
 console.log(`update-snapshot: wrote snapshot as of ${iso}`);
-console.log(`  models ${nf.format(totals.modelCount)} | lifetime ${nf.format(totals.allTimeDownloads)} | 30 days ${nf.format(totals.last30DaysDownloads)} (${share}%)`);
+  console.log(`  models ${nf.format(totals.modelCount)} | creators ${nf.format(totals.creatorCount)} | lifetime ${nf.format(totals.allTimeDownloads)} | 30 days ${nf.format(totals.last30DaysDownloads)} (${share}%)`);

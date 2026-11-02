@@ -158,6 +158,38 @@ test("HEAD reports the same failures as GET, still without a body", async () => 
   }
 });
 
+test("publishes creatorCount with the aggregate totals", async () => {
+  const originalFetch = globalThis.fetch;
+  const models = [
+    { id: "alice/one", downloads: 12, downloadsAllTime: 100, tags: ["heretic"] },
+    { id: "alice/two", downloads: 3, downloadsAllTime: 40, tags: ["heretic"] },
+    { id: "bob/three", downloads: 1, downloadsAllTime: 10, tags: ["heretic"] },
+  ];
+  globalThis.fetch = async () => ({
+    ok: true,
+    status: 200,
+    headers: { get: () => "" },
+    json: async () => models,
+  });
+
+  try {
+    const response = createResponse();
+    await statsHandler({ query: {} }, response);
+
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(response.body.totals, {
+      modelCount: 3,
+      creatorCount: 2,
+      allTimeDownloads: 150,
+      last30DaysDownloads: 16,
+    });
+    assert.equal(response.body.scope, "global");
+    assert.equal(response.body.models, undefined, "the global view omits models");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("publishes stats with a 12-hour shared cache", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => ({
