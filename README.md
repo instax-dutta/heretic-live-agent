@@ -133,20 +133,19 @@ The site includes crawlability and social-sharing files:
 - `index.html` carries canonical, Open Graph, Twitter card, and JSON-LD metadata.
 - The methodology prose, the entity disclaimer, and the outbound links appear in both `index.html` and `src/main.js`. The static fallback disappears the moment JavaScript runs, so a link that exists only there is a link no visitor and no rendering crawler sees.
 - The page links `/api/stats` as the authoritative machine-readable surface.
-- `public/og-image.png` is the compatible 1200×630 raster for social previews.
-- `public/og-image.svg` is the editable source for that PNG.
+- `public/og-image.png` is the 1200×630 card used for social previews.
 
 The social metadata points to the PNG because Discord, WhatsApp, and some other link unfurlers do not reliably render SVG Open Graph images.
 
 ### Social preview artwork
 
-`og-image.svg` is the source of truth. The PNG is rendered from it, so the two stay in step.
+`og-image.png` is the delivered card. It was generated with an image model from a prompt based on the design system in `DESIGN.md`, then cropped and resized to 1200×630. There is no separate vector source.
 
-The card follows the design system in `DESIGN.md`: near-black ground, phosphor amber, Space Grotesk for the statement, IBM Plex Mono for labels, and Spectral italic for the provenance note. The SVG embeds Space Grotesk, IBM Plex Mono, and Spectral as base64 WOFF2, so it renders the same in any browser without a network font request.
+The card uses the visual system: near-black ground, phosphor amber, a grotesque for the statement, a monospaced face for labels, and an italic serif for the provenance note.
 
 The card carries no hardcoded totals. A link preview is the most screenshotted and most believed surface on the site, and any number baked into the artwork will go stale. The hero is three register labels: Models tracked, Unique creators, and Downloads. A note says every figure is summed from public Hugging Face metadata. Nothing is sampled or projected, so the card never goes stale. `og:image:alt` describes what the card shows.
 
-Provenance: the SVG was authored by hand to the design system above. The PNG was rendered from that SVG by headless Google Chrome at 1200×630, which resolves the embedded webfonts exactly as a browser would. No external image-generation service was used, and no Antigravity-generated asset is claimed.
+Provenance: the card was generated externally with an image model, then cropped and resized to 1200×630. No totals are baked into the artwork.
 
 ## Keeping the published figures current
 
