@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="faviconTitle">
   <title id="faviconTitle">Heretic Live</title>
-  <!-- The arrival strip: one bar per second, the newest in paper white, with the
-       30-day mean drawn as a capped rule. Matches the site ground and phosphor. -->
+  <!-- The site mark: a bar glyph in the site palette. It is a mark, not a data
+       trace, and carries no figures. -->
   <rect width="64" height="64" fill="#08090a"/>
   <g>
     <rect x="9"  y="38" width="4" height="17" fill="#ffb000" opacity="0.5"/>

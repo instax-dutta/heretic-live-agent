@@ -1,19 +1,19 @@
 /* ==========================================================================
-   Heretic Live — "Variance"
-   A tide gauge for an accumulating quantity. Time runs across the arrival
-   strip, the 30-day mean is drawn through it, and the live total sits below
-   at full measure. The spread is the estimator's own uncertainty, shown
-   rather than hidden.
+   Heretic Live — "The Public Index"
+   A sourced record of an accumulating quantity. Every figure is summed from
+   public Hugging Face metadata, dated, and refreshed every 12 hours. Nothing
+   is sampled, simulated, or projected forward.
 
    Named rules (contracts, not suggestions):
-     The One Phosphor Rule — amber appears only where something is live or
-                             acts. A still amber element is a defect.
+     The One Phosphor Rule — amber appears only where something acts or is
+                             part of the brand. A still amber element is a
+                             defect.
      The Tabular Numeral Rule — every number that changes or compares is
                              tabular. A jittering figure is a defect.
      The No-Kicker Rule — headings carry their own weight, no eyebrow label
                           above a heading, ever.
-     The Instrument Rule — the arrival strip is evidence, not ornament. It
-                          shows the real Poisson draw from the real rate.
+     The Sourced Figure Rule — every published number carries a source and a
+                             date. Never invent telemetry to fill a panel.
    ========================================================================== */
 
 * { box-sizing: border-box; }
@@ -116,14 +116,6 @@ input { caret-color: var(--phos); }
   color: var(--dim);
 }
 
-.live-dot {
-  width: 7px;
-  height: 7px;
-  flex: 0 0 7px;
-  border-radius: 50%;
-  background: var(--phos);
-}
-
 .main {
   display: flex;
   flex-direction: column;
@@ -166,112 +158,6 @@ input { caret-color: var(--phos); }
 .dateline a { color: var(--ink-2); text-underline-offset: 3px; transition: color 0.3s var(--ease); }
 .dateline a:hover { color: var(--phos); }
 
-/* ---------- the arrival strip ------------------------------------------ */
-
-.strip {
-  border: 1px solid var(--rule);
-  background: var(--panel);
-  padding: 15px 17px 13px;
-}
-
-.strip-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 12px;
-}
-
-.strip-title {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  font-weight: 500;
-  letter-spacing: 0.17em;
-  text-transform: uppercase;
-  color: var(--dim);
-}
-.strip-mean { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.13em; color: var(--phos); }
-
-.plot {
-  position: relative;
-  height: clamp(84px, 10.5vw, 148px);
-  border-bottom: 1px solid var(--rule);
-}
-
-/* Columns right-align so a session that has only been running a few seconds
-   shows a few narrow bars at the right edge instead of stretched filler. */
-.cols {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  gap: 2px;
-  height: 100%;
-}
-
-.mean-line {
-  position: absolute;
-  top: -10px;
-  bottom: 0;
-  width: 1px;
-  z-index: 3;
-  background: repeating-linear-gradient(to bottom, var(--phos) 0 4px, transparent 4px 8px);
-}
-.mean-line::before {
-  content: "";
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 7px;
-  height: 7px;
-  background: var(--phos);
-}
-
-.slot {
-  display: flex;
-  flex: 1 1 0;
-  min-width: 2px;
-  max-width: 14px;
-  height: 100%;
-  align-items: flex-end;
-}
-/* An unfilled channel slot: the instrument at rest, not missing data. */
-.slot:empty::after {
-  content: "";
-  width: 100%;
-  height: 2px;
-  background: var(--rule);
-}
-.slot i {
-  display: block;
-  width: 100%;
-  border-radius: 1px 1px 0 0;
-  background: var(--phos);
-  opacity: 0.82;
-  transition: height 0.4s var(--ease);
-}
-.slot.now i { background: var(--ink); opacity: 1; }
-
-.strip.paused .cols { display: none; }
-.strip.paused .mean-line { background: var(--phos); opacity: 0.5; }
-.paused-note {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--faint);
-}
-
-.strip-foot {
-  display: flex;
-  justify-content: space-between;
-  padding-top: 9px;
-  font-family: var(--mono);
-  font-size: 8.5px;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--faint);
-}
-
 /* ---------- the figure -------------------------------------------------- */
 
 .figure {
@@ -293,7 +179,7 @@ input { caret-color: var(--phos); }
 .scope-tag { color: var(--ink-2); }
 .dateline .stamp { margin-right: 8px; }
 
-.live-total {
+.figure-total {
   margin: 0;
   font-size: clamp(46px, 9.6vw, 138px);
   font-weight: 700;
@@ -311,7 +197,7 @@ input { caret-color: var(--phos); }
   margin: 18px 0 0;
   font-family: var(--mono);
   font-size: 11.5px;
-  color: var(--phos);
+  color: var(--ink-2);
 }
 .pace span { color: var(--dim); }
 
@@ -677,7 +563,6 @@ input { caret-color: var(--phos); }
 @media (prefers-reduced-motion: no-preference) {
   .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.7s var(--ease), transform 0.7s var(--ease); }
   .reveal.in { opacity: 1; transform: none; }
-  .live-dot { animation: breathe 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
   .loading-list span { animation: shimmer 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
   .model-row { animation: deploy 0.3s cubic-bezier(0.2, 0.9, 0.25, 1) backwards; }
   .model-row:nth-child(2) { animation-delay: 0.04s; }
@@ -689,7 +574,6 @@ input { caret-color: var(--phos); }
   .model-row:nth-child(8) { animation-delay: 0.28s; }
 }
 
-@keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 @keyframes shimmer { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 @keyframes deploy { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
@@ -739,9 +623,7 @@ input { caret-color: var(--phos); }
   .main { padding: 22px var(--gutter) 40px; gap: 26px; }
   .head { flex-direction: column; gap: 12px; }
   .dateline { text-align: left; }
-  .strip { padding: 13px 13px 11px; }
-  .strip-head { flex-direction: column; gap: 4px; }
-  .live-total { font-size: clamp(42px, 13.5vw, 84px); }
+  .figure-total { font-size: clamp(42px, 13.5vw, 84px); }
   .result-head { display: block; }
   .result-head .stamp { display: inline-block; margin-top: 18px; }
   .empty-state { padding: 42px 0 52px; }
@@ -779,5 +661,5 @@ input { caret-color: var(--phos); }
 }
 
 @media (max-width: 380px) {
-  .live-total { font-size: clamp(38px, 12.6vw, 56px); letter-spacing: -0.05em; }
+  .figure-total { font-size: clamp(38px, 12.6vw, 56px); letter-spacing: -0.05em; }
 }

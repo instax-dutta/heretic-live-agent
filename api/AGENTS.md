@@ -6,7 +6,7 @@ The only backend. A Vercel serverless function that turns public Hugging Face Hu
 
 ## Ownership
 
-- `stats-core.js` owns pagination traversal, expansion parameters, tag-plus-name discovery, deduplication, ranking, aggregation, rate estimation, Poisson sampling, and the request gate
+- `stats-core.js` owns pagination traversal, expansion parameters, tag-plus-name discovery, deduplication, ranking, aggregation, 30-day rate estimation, and the request gate
 - `stats.js` owns HTTP concerns only: request method handling, CORS, cache headers, upstream timeout, status codes, and response shape
 - Owns upstream failure behavior. Every failure path must resolve to something the browser can render
 

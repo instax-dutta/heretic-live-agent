@@ -16,7 +16,7 @@ Hugging Face creators, model evaluators, and members of the Heretic community wh
 
 ## Product Purpose
 
-Heretic Live turns public Hugging Face metadata into a live index of Heretic model reach. Success means a visitor can understand the current scale of the ecosystem and inspect a creator's public Heretic models without logging in.
+Heretic Live turns public Hugging Face metadata into a public index of Heretic model reach. Success means a visitor can understand the current scale of the ecosystem and inspect a creator's public Heretic models without logging in.
 
 ## Positioning
 
@@ -56,7 +56,7 @@ The application reads public Hugging Face Hub metadata through a Vercel serverle
 2. Treat public metadata as evidence, not decoration.
 3. Keep lookup and reading paths fast, direct, and usable without an account.
 4. Make degraded data states explicit without hiding the last useful signal.
-5. Let the interface feel like an instrument for observing a live model ecosystem.
+5. Let the interface feel like an instrument for observing a public model ecosystem, with every figure sourced and dated.
 
 ## Accessibility & Inclusion
 

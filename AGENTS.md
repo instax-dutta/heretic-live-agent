@@ -81,10 +81,10 @@ Heretic Live is a single-page public observability interface for the Heretic mod
 ### Global rails
 
 - Factual copy, methodology, and Hugging Face attribution are product commitments. Do not rewrite them for tone, length, or layout.
-- Reskin and restructure freely. Do not change the API response shape, the live-rate math, or the state machine without updating `api/`, `shared/`, and `test/` in the same change.
+- Reskin and restructure freely. Do not change the API response shape, the 30-day rate math, or the state machine without updating `api/`, `shared/`, and `test/` in the same change.
 - Public Hugging Face metadata only. No authentication, no private repositories, no secrets, no environment variables.
 - Heretic Live is an unaffiliated third-party observer of the upstream project, not an official surface of it. The methodology, the disclaimer, and the provenance links must appear in both `index.html` and `src/main.js`, because the static fallback is discarded the moment JavaScript runs.
-- The live total is a rate estimate extrapolated from the 30-day mean, not a measurement. Copy must never imply otherwise.
+- The all-time total is a measured sum from public Hub metadata; the per-second pace is the 30-day average. Never present simulated, sampled, or projected telemetry as data.
 - The static HTML publishes figures a crawler reads without JavaScript. Those figures are machine-owned: edit them through `update-snapshot.mjs` or the snapshot markers, never by hand. `test/snapshot.test.js` fails if the two copies disagree or the snapshot goes stale.
 - Keep keyboard navigation, visible focus, responsive layout, and `prefers-reduced-motion` behavior working on every change.
 - The dependency list is deliberately tiny (`vite`, `lenis`). Do not add a dependency without a stated need.
@@ -102,7 +102,7 @@ Heretic Live is a single-page public observability interface for the Heretic mod
 | `README.md` | Human-facing setup, architecture, API behavior, deployment, and verification documentation |
 | `api/` | Vercel serverless handler and the pure aggregation core |
 | `shared/` | Pure modules imported by both the browser and the tests |
-| `src/` | Browser application: render, state, live ticker, styles |
+| `src/` | Browser application: render, state, styles |
 | `test/` | Node built-in test runner regression suites |
 | `public/` | Files served verbatim at the site root |
 | `.impeccable/` | Generated design-system extraction owned by the impeccable tooling. Regenerate through that tool; do not hand-edit |
@@ -119,7 +119,7 @@ Heretic Live is a single-page public observability interface for the Heretic mod
 
 - `api/AGENTS.md` — serverless handler, Hugging Face IO, pagination, dedup, aggregation, cache and CORS policy
 - `shared/AGENTS.md` — runtime-agnostic pure modules: figure copy and username rules
-- `src/AGENTS.md` — browser application: single-render page, state machine, live ticker, styles
+- `src/AGENTS.md` — browser application: single-render page, state machine, styles
 - `test/AGENTS.md` — Node built-in test runner suites and their coverage contract
 - `.github/AGENTS.md` — scheduled refresh of the published snapshot
 - `public/AGENTS.md` — static assets served at the site root, including social and crawler files

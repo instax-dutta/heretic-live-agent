@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The browser application. One page, one render function, one state object, one live ticker, one stylesheet. Nothing here talks to Hugging Face directly and nothing here computes authoritative totals.
+The browser application. One page, one render function, one state object, one stylesheet. Nothing here talks to Hugging Face directly and nothing here computes authoritative totals.
 
 ## Ownership
 
@@ -21,12 +21,11 @@ The browser application. One page, one render function, one state object, one li
 - Every render branch that can be reached by a user must be designed. The full matrix: no-JS fallback, global loading, global loaded, creator loading, creator results, creator empty result, degraded upstream error, failed lookup, invalid username, reduced motion
 - Entrance animation runs once. Later renders land immediately, so a scope change never replays the opening and no section can be stranded at `opacity: 0` when the observer misses a frame
 
-### Live ticker
+### No simulated telemetry
 
-- The ticking total is a Poisson draw of whole-download arrivals from the 30-day mean rate, anchored at render time because the API total is a 12-hour snapshot. Keep the math in `api/stats-core.js`; `src/` only schedules the interval
-- Restart the ticker only when the totals key (`allTimeDownloads|last30DaysDownloads|modelCount`) changes. Restarting drops accrued arrivals and makes the counter visibly jump backward
-- `#live-total` carries `aria-live="off"`. A per-second announced number is hostile; do not change this
-- Under `prefers-reduced-motion: reduce` the ticker, Lenis smooth scroll, and reveal animations all stay off. Each guard is independent on purpose
+- The page may not synthesize per-second arrivals, project a total forward, or draw a chart of invented events. Every figure is the API total, or the dated published snapshot when the API is unavailable
+- The pace line is the 30-day total divided by the window, labelled as a 30-day average. It is arithmetic on sourced data, never a live reading
+- Under `prefers-reduced-motion: reduce`, Lenis smooth scroll and the reveal animations stay off. Each guard is independent on purpose
 
 ### Copy and escaping
 
@@ -43,25 +42,15 @@ The browser application. One page, one render function, one state object, one li
 
 - `style.css` is native CSS with no preprocessor, no utility framework, and no build step beyond Vite bundling it
 - Design tokens are declared once in `:root`. `DESIGN.md` is the binding source of truth for palette, type scale, and named rules; `:root` mirrors it. If they disagree, `DESIGN.md` wins and `:root` is the bug
-- Named rules from `DESIGN.md` (the One Phosphor Rule, the Contrast Floor, the Tabular Numeral Rule, the No-Kicker Rule, the Instrument Flat Rule) are contracts, not suggestions
+- Named rules from `DESIGN.md` (the One Phosphor Rule, the Contrast Floor, the Tabular Numeral Rule, the No-Kicker Rule, the Sourced Figure Rule, the Instrument Flat Rule) are contracts, not suggestions
 - Every text token must measure 4.5:1 or better against both `--ground` and `--panel`. Recompute before changing one
 - Every changing or comparing number uses `font-variant-numeric: tabular-nums`
 - Breakpoints are 1100px, 900px, 560px, and 380px. Each one has a job; do not add a fifth without a layout that needs it
 - A fractional grid column holding a short value leaves a dead canyon between the value and whatever follows it. Value columns are `auto`, notes take the remaining space
 
-### The arrival strip
-
-- The strip is the design's protagonist and it is evidence, not decoration. It renders one bar per second of the same Poisson draw the figure counts
-- The channel is always drawn at full width. Unfilled slots get a baseline tick so a fresh visit reads as an instrument at rest, never as a broken render during the first 90 seconds
-- The left caption states the true elapsed window, not a fixed `90 s ago`, so a partly filled channel explains itself
-- Scale is anchored to the mean (`max(3, ceil(rate * 2.2))`), never to the largest sample, so the mean rule never moves between sessions
-- A zero-arrival second draws a flat tick. Quiet is real information; do not drop zero samples
-- Do not band bars by value or add a glow. The mean rule already encodes above and below, and a soft edge on a hard-edged page reads as a fault
-- `paintStrip` rebuilds the column markup. Matching children by index silently leaves a growing gap as the buffer and DOM drift apart
-
 ### Honesty contracts
 
-- The estimator note is not optional copy. It states that the live total is an estimate, not a measurement, and that the spread is the estimator's own variance
+- The provenance note is not optional copy. It states that all-time downloads are summed from public Hugging Face metadata and refreshed every 12 hours
 - A degraded lookup must fall back to global scope. Attaching a creator's name to the published global snapshot would be a lie
 - A failed lookup must not claim "no models found". It did not check, so it says so and offers a retry
 - The figure label changes to "All-time downloads · last published" in the degraded state
@@ -79,7 +68,7 @@ The browser application. One page, one render function, one state object, one li
 - `npm test`
 - `node --check src/main.js`
 - `npm run build`
-- Visual check: render at 390, 768, 1280, and 1600 wide, plus 200 percent zoom on the dense regions. Keyboard-only pass through the lookup form. Reduced-motion pass on the ticker and reveal animations
+- Visual check: render at 390, 768, 1280, and 1600 wide, plus 200 percent zoom on the dense regions. Keyboard-only pass through the lookup form. Reduced-motion pass on Lenis smooth scroll and the reveal animations
 - Contrast check: recompute the text-token ratios against `--ground` and `--panel` after any palette change
 - Every state in the matrix above must be screenshotted, not assumed. Lenis smooth scroll invalidates synthetic click coordinates in screenshot harnesses, so drive the form with real DOM events (`requestSubmit`) rather than a click at pixel coordinates
 
