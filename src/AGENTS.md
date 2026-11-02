@@ -65,6 +65,7 @@ The browser application. One page, one render function, one state object, one li
 - A degraded lookup must fall back to global scope. Attaching a creator's name to the published global snapshot would be a lie
 - A failed lookup must not claim "no models found". It did not check, so it says so and offers a retry
 - The figure label changes to "All-time downloads · last published" in the degraded state
+- The unique-creator row is global-scope only. A creator view is a single publisher, so the row is omitted there. The count comes from `totals.creatorCount`, which is present in the published snapshot too, so the degraded view keeps showing it
 
 ## Work Guidance
 

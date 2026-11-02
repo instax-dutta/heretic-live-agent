@@ -64,12 +64,26 @@ export function collectModels(tagged, named, { filterHeretic = false } = {}) {
   return [...models.values()].sort((a, b) => b.downloadsAllTime - a.downloadsAllTime);
 }
 
+function creatorOf(model) {
+  // Hugging Face model ids are `namespace/name`; the namespace is the account
+  // or organization that publishes the repository.
+  const id = String(model?.id || "");
+  const slash = id.indexOf("/");
+  return slash > 0 ? id.slice(0, slash) : "";
+}
+
 export function aggregate(models) {
-  return models.reduce((totals, model) => ({
-    modelCount: totals.modelCount + 1,
-    allTimeDownloads: totals.allTimeDownloads + Number(model.downloadsAllTime || 0),
-    last30DaysDownloads: totals.last30DaysDownloads + Number(model.downloads || 0),
-  }), { modelCount: 0, allTimeDownloads: 0, last30DaysDownloads: 0 });
+  const creators = new Set();
+  const totals = models.reduce((totals, model) => {
+    const creator = creatorOf(model);
+    if (creator) creators.add(creator);
+    return {
+      modelCount: totals.modelCount + 1,
+      allTimeDownloads: totals.allTimeDownloads + Number(model.downloadsAllTime || 0),
+      last30DaysDownloads: totals.last30DaysDownloads + Number(model.downloads || 0),
+    };
+  }, { modelCount: 0, allTimeDownloads: 0, last30DaysDownloads: 0 });
+  return { ...totals, creatorCount: creators.size };
 }
 
 export function createRequestGate() {

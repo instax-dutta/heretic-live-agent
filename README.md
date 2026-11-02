@@ -9,6 +9,7 @@ Heretic Live is a public observability interface for the Heretic model ecosystem
 - Creator-scoped figure labels: lookups re-caption the figure to the creator so user totals are never presented as global
 - Lenis smooth scrolling (skipped under reduced-motion preferences)
 - Total indexed model count
+- Unique creator count across the indexed repositories
 - Creator lookup by Hugging Face username
 - Ranked creator model results with lifetime and recent downloads
 - Discovery through both the `heretic` tag and model names
@@ -61,7 +62,7 @@ The API performs two Hugging Face model searches:
 1. Repositories carrying the `heretic` tag
 2. Repositories whose model name contains `heretic`
 
-Both searches follow Hugging Face cursor pagination up to a bounded safety limit. Results are merged and deduplicated by repository ID before totals are calculated. Creator results are sorted by lifetime downloads.
+Both searches follow Hugging Face cursor pagination up to a bounded safety limit. Results are merged and deduplicated by repository ID before totals are calculated. Creator results are sorted by lifetime downloads. The aggregate also reports the number of distinct publishing namespaces, so one creator with many repositories counts once.
 
 The methodology is based on the public Heretic discussion and reference material available in [p-e-w/heretic issue #450](https://github.com/p-e-w/heretic/issues/450).
 
@@ -100,7 +101,7 @@ node --check api/stats-core.js
 npm audit --audit-level=high
 ```
 
-The tests cover pagination, expansion parameters, deduplication, ranking, aggregate totals, live-rate estimation, discrete-arrival sampling, figure scope labels, username validation, stale-request protection, cache policy, HTTP method handling, and CORS preflight behavior.
+The tests cover pagination, expansion parameters, deduplication, ranking, aggregate totals, unique-creator counting, live-rate estimation, discrete-arrival sampling, figure scope labels, username validation, stale-request protection, cache policy, HTTP method handling, and CORS preflight behavior.
 
 ## Deployment to Vercel
 
@@ -147,7 +148,7 @@ Provenance: the SVG was authored by hand to the design system above. The PNG was
 
 ## Keeping the published figures current
 
-The homepage is a static build, but it publishes download totals that change every 12 hours. A crawler reading the served HTML sees those figures and nothing else, so if they are never refreshed the site serves a wrong number to every AI agent that reads it.
+The homepage is a static build, but it publishes download totals and a unique-creator count that change every 12 hours. A crawler reading the served HTML sees those figures and nothing else, so if they are never refreshed the site serves a wrong number to every AI agent that reads it.
 
 `update-snapshot.mjs` fetches `/api/stats` and rewrites the figures in two places:
 
@@ -166,7 +167,7 @@ The script is idempotent: when the upstream snapshot has not changed it writes n
 
 Two guards back this up:
 
-- `test/snapshot.test.js` fails if `index.html` and `src/main.js` ever publish different figures, if the derived recent-share does not match the published numbers, or if the snapshot carries no date
+- `test/snapshot.test.js` fails if `index.html` and `src/main.js` ever publish different figures, if the published creator count is not a positive number no larger than the model count, if the derived recent-share does not match the published numbers, or if the snapshot carries no date
 - The same suite fails if the snapshot is older than 30 days. This is the alarm for automation that has stopped: GitHub disables scheduled workflows after 60 days of repository inactivity, and a revoked token fails quietly. Without that check a dead job would look exactly like a healthy page
 
 Every published figure is dated in the markup, so a snapshot that does go stale reads as dated rather than as current.

@@ -106,7 +106,7 @@ Heretic Live is a single-page public observability interface for the Heretic mod
 | `test/` | Node built-in test runner regression suites |
 | `public/` | Files served verbatim at the site root |
 | `.impeccable/` | Generated design-system extraction owned by the impeccable tooling. Regenerate through that tool; do not hand-edit |
-| `.github/` | Scheduled automation, currently the published-snapshot refresh |
+| `.github/` | Verification workflow plus the scheduled published-snapshot refresh |
 
 ## User Preferences
 

@@ -10,8 +10,8 @@ const nf = new Intl.NumberFormat("en-US");
 // Published snapshot used when the upstream API is unreachable, and the only
 // figures a text-only retriever ever sees. Refreshed by update-snapshot.mjs;
 // `asOf` dates them so a stale snapshot is honest rather than merely wrong.
-const fallback = { modelCount: 8611, allTimeDownloads: 88600726, last30DaysDownloads: 14279023 };
-const fallbackAsOf = "2026-11-02T06:02:13.196Z";
+const fallback = { modelCount: 8612, creatorCount: 1820, allTimeDownloads: 88600442, last30DaysDownloads: 14279009 };
+const fallbackAsOf = "2026-11-02T08:03:09.684Z";
 // snapshot:end
 let state = { scope: "global", loading: true, error: "", data: null, lastUpdated: null, validation: "" };
 const requestGate = createRequestGate();
@@ -223,7 +223,6 @@ function render() {
     : "0.0";
   const liveRate = estimateDownloadsPerSecond(totals.last30DaysDownloads);
   const liveRateLabel = formatRate(liveRate);
-  const meanLifetime = totals.modelCount ? Math.round(totals.allTimeDownloads / totals.modelCount) : 0;
   const figure = getFigureLabels({
     isUser: creatorScope,
     username: escapeHtml(username),
@@ -281,10 +280,10 @@ function render() {
             <span class="row-value">${format(totals.modelCount)}</span>
             <span class="row-note">Tag and name discovery, deduplicated by repository ID</span>
           </li>
-          ${meanLifetime ? `<li class="row">
-            <span class="row-label">Mean lifetime downloads</span>
-            <span class="row-value">${format(meanLifetime)}</span>
-            <span class="row-note">Total lifetime volume divided across every indexed repository</span>
+          ${!creatorScope && totals.creatorCount ? `<li class="row">
+            <span class="row-label">Unique creators</span>
+            <span class="row-value">${format(totals.creatorCount)}</span>
+            <span class="row-note">Distinct Hugging Face accounts and organizations publishing the indexed repositories</span>
           </li>` : ""}
         </ul>
 

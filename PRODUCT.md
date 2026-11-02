@@ -28,7 +28,7 @@ The application reads public Hugging Face Hub metadata through a Vercel serverle
 
 ## Capabilities and Constraints
 
-- Global all-time downloads, recent 30-day downloads, and model count.
+- Global all-time downloads, recent 30-day downloads, model count, and unique creator count.
 - Creator lookup by Hugging Face username.
 - Ranked creator model results with lifetime and recent download signals.
 - Tag-plus-name discovery, cursor pagination, deduplication, and a degraded-data state.

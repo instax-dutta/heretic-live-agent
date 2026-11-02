@@ -30,7 +30,7 @@ function regionText(source, name) {
 // static HTML a crawler reads, and the client fallback used when the API is
 // unreachable. Nothing at runtime keeps them in step, so this suite does.
 test("the static HTML carries a machine-writable snapshot for every published figure", () => {
-  for (const name of ["asof", "lifetime", "d30", "share", "models"]) {
+  for (const name of ["asof", "lifetime", "d30", "share", "models", "creators"]) {
     assert.ok(region(html, name), `index.html is missing the snapshot:${name} region`);
   }
 });
@@ -43,20 +43,23 @@ test("the client fallback carries a machine-writable snapshot", () => {
 
 test("the static HTML and the client fallback publish the same figures", () => {
   const fallback = js.match(
-    /const fallback = \{ modelCount: (\d+), allTimeDownloads: (\d+), last30DaysDownloads: (\d+) \};/,
+    /const fallback = \{ modelCount: (\d+), creatorCount: (\d+), allTimeDownloads: (\d+), last30DaysDownloads: (\d+) \};/,
   );
   assert.ok(fallback, "src/main.js no longer declares a parsable fallback object");
 
-  const [models, lifetime, d30] = fallback.slice(1).map(Number);
+  const [models, creators, lifetime, d30] = fallback.slice(1).map(Number);
 
+  assert.ok(creators > 0, "the published creator count must be positive");
+  assert.ok(creators <= models, "every creator must publish at least one indexed model");
   assert.equal(regionText(html, "models"), models.toLocaleString("en-US"));
+  assert.equal(regionText(html, "creators"), creators.toLocaleString("en-US"));
   assert.equal(regionText(html, "lifetime"), lifetime.toLocaleString("en-US"));
   assert.equal(regionText(html, "d30"), d30.toLocaleString("en-US"));
 });
 
 test("the published recent-share matches the published figures", () => {
   const [, lifetime, d30] = js
-    .match(/const fallback = \{ modelCount: \d+, allTimeDownloads: (\d+), last30DaysDownloads: (\d+) \};/)
+    .match(/const fallback = \{ modelCount: \d+, creatorCount: \d+, allTimeDownloads: (\d+), last30DaysDownloads: (\d+) \};/)
     .map(Number);
   const expected = `${((d30 / lifetime) * 100).toFixed(1)}% of lifetime volume is recent`;
   assert.equal(regionText(html, "share"), expected);

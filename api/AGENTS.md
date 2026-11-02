@@ -27,7 +27,8 @@ The only backend. A Vercel serverless function that turns public Hugging Face Hu
 
 ### Response contract
 
-- Success is `{ ok: true, scope, username, updatedAt, totals: { modelCount, allTimeDownloads, last30DaysDownloads }, models, source }`
+- Success is `{ ok: true, scope, username, updatedAt, totals: { modelCount, creatorCount, allTimeDownloads, last30DaysDownloads }, models, source }`
+- `creatorCount` is the number of distinct `namespace` prefixes across the deduplicated models, so one publisher with many repositories counts once. It is `1` in a creator-scoped response
 - `models` is present only when a username was supplied. The global view deliberately omits it
 - `username` is `null` in the global scope, never `""`
 - Status codes: `204` for OPTIONS preflight, `400` for an invalid username, `405` for any method other than GET, HEAD or OPTIONS, `502` for upstream failure with a user-safe message, `200` otherwise

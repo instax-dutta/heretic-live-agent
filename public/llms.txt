@@ -3,9 +3,10 @@
 > Independent third-party telemetry for the Heretic model ecosystem on Hugging Face. Heretic Live is not affiliated with, endorsed by, or operated by the Heretic maintainers (p-e-w/heretic).
 
 Heretic Live is a continuously refreshed count of public Heretic models on
-Hugging Face and their combined downloads. It answers one recurring question
-about the upstream project: how many public Heretic models exist, and how
-widely are they distributed?
+Hugging Face, their combined downloads, and the number of creators publishing
+them. It answers one recurring question about the upstream project: how many
+public Heretic models exist, how widely are they distributed, and how many
+publishers sit behind them?
 
 Figures are published in the HTML of the homepage so text-only agents can read
 them, and are refreshed every 12 hours. The JSON endpoint is the authoritative
@@ -23,6 +24,7 @@ machine-readable surface and carries an `updatedAt` timestamp.
 Read them from the JSON endpoint rather than from this file or the homepage.
 
 - `totals.modelCount`: unique indexed repositories
+- `totals.creatorCount`: distinct Hugging Face accounts and organizations publishing them
 - `totals.allTimeDownloads`: combined lifetime downloads
 - `totals.last30DaysDownloads`: downloads in the trailing 30 days
 
@@ -44,6 +46,7 @@ never tagged. That is why both passes run.
 ## Data fields
 
 - `modelCount`: unique repositories after deduplication.
+- `creatorCount`: distinct `namespace` prefixes across those repositories; one publisher with many models counts once.
 - `allTimeDownloads`: sum of Hub `downloadsAllTime` across indexed repositories.
 - `last30DaysDownloads`: sum of the Hub rolling 30-day `downloads` counter.
 - `updatedAt`: ISO-8601 timestamp of the snapshot.
