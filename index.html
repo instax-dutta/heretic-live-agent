@@ -20,7 +20,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <link rel="alternate" type="text/plain" href="/llms.txt" title="Heretic Live for language models" />
-    <link rel="alternate" type="application/json" href="/api/stats" title="Heretic Live totals as JSON" />
+    <link rel="alternate" type="application/json" href="/data/stats.json" title="Heretic Live totals as JSON" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Heretic Live" />
     <meta property="og:url" content="https://heretic.sdad.pro/" />
@@ -79,7 +79,7 @@
             <p class="dateline">Public model index · Hugging Face Hub API<br>
                             <span class="scope-tag">global index</span> ·
               <!-- snapshot:asof -->
-              <time datetime="2026-11-02T21:42:26Z">as of 2026-11-02</time>
+              <time datetime="2026-11-03T07:16:32Z">as of 2026-11-03</time>
               <!-- /snapshot:asof -->
             </p>
           </header>
@@ -87,7 +87,7 @@
             <div class="figure-l">
               <p class="fig-label">All-time downloads</p>
                             <!-- snapshot:lifetime -->
-                            <p class="figure-total">89,113,633</p>
+                            <p class="figure-total">89,102,065</p>
                             <!-- /snapshot:lifetime -->
               <p class="figure-sub">Combined downloads across all indexed models</p>
             </div>
@@ -97,7 +97,7 @@
             <li class="row">
               <span class="row-label">Last 30 days</span>
                             <!-- snapshot:d30 -->
-                            <span class="row-value">14,300,561</span>
+                            <span class="row-value">14,288,993</span>
                             <!-- /snapshot:d30 -->
               <!-- snapshot:share -->
               <span class="row-note">16.0% of lifetime volume is recent</span>
@@ -106,14 +106,14 @@
             <li class="row">
               <span class="row-label">Models tracked</span>
                             <!-- snapshot:models -->
-                            <span class="row-value">8,620</span>
+                            <span class="row-value">8,627</span>
                             <!-- /snapshot:models -->
               <span class="row-note">Tag and name discovery, deduplicated by repository ID</span>
             </li>
             <li class="row">
               <span class="row-label">Unique creators</span>
                             <!-- snapshot:creators -->
-                            <span class="row-value">1,823</span>
+                            <span class="row-value">1,828</span>
                             <!-- /snapshot:creators -->
               <span class="row-note">Distinct Hugging Face accounts and organizations publishing the indexed repositories</span>
             </li>
@@ -125,7 +125,7 @@
                 <p>Enable JavaScript for current totals and creator lookup.</p>
               </div>
               <p class="methods-body">Heretic models are discovered in two passes over the public Hugging Face Hub API: repositories carrying the <code>heretic</code> tag, plus repositories with "heretic" in their name. The two result sets are merged and deduplicated by repository ID before any total is calculated, so the count favors coverage over a narrow snapshot of popular repositories.</p>
-              <p class="methods-body">The totals above are aggregate download counts for public repositories, published here and refreshed every 12 hours so a reader without JavaScript sees the latest published figures. The <a href="/api/stats">JSON endpoint</a> is the machine-readable source for these figures. It carries an <code>updatedAt</code> timestamp and accepts <code>?username=</code> for a creator-scoped readout. A summary for language models is at <a href="/llms.txt">/llms.txt</a>.</p>
+              <p class="methods-body">The totals above are aggregate download counts for public repositories, published here and refreshed every 12 hours so a reader without JavaScript sees the latest published figures. The <a href="/data/stats.json">JSON snapshot</a> is the machine-readable source for these figures. It carries an <code>updatedAt</code> timestamp. Creator results are filtered from the published model list. A summary for language models is at <a href="/llms.txt">/llms.txt</a>.</p>
               <p class="provenance">Heretic Live is an independent, unaffiliated third-party index. It is not operated or endorsed by the Heretic maintainers. The counting approach and the original reference figures come from <a href="https://github.com/p-e-w/heretic/issues/450">p-e-w/heretic#450</a>, and the upstream models themselves are at <a href="https://huggingface.co/models?search=heretic">huggingface.co/models?search=heretic</a>.</p>
             </div>
           </section>

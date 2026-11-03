@@ -30,6 +30,5 @@ jobs:
       - name: Syntax check
         run: |
           node --check src/main.js
-          node --check api/stats.js
-          node --check api/stats-core.js
+          node --check shared/stats-core.js
           node --check update-snapshot.mjs

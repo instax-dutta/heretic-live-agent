@@ -7,8 +7,8 @@ The browser application. One page, one render function, one state object, one st
 ## Ownership
 
 - Owns everything the visitor sees and does: markup, copy, view states, transitions, and the stylesheet
-- Owns no data transformation logic. Aggregation lives in `api/stats-core.js`, shared copy and username rules live in `shared/`
-- Consumes the `/api/stats` response shape and must stay in sync with `api/AGENTS.md`
+- Owns no data transformation logic. Aggregation and creator filtering live in `shared/stats-core.js`; figure copy and username rules live in `shared/`
+- Consumes the `data/stats.json` and `data/models.json` shapes and must stay in sync with `update-snapshot.mjs`
 
 ## Local Contracts
 
@@ -17,15 +17,22 @@ The browser application. One page, one render function, one state object, one st
 - One `render()` call replaces `#app` with a full `innerHTML` string. There is no component tree, no virtual DOM, and no diffing
 - Because the subtree is replaced on every render, event listeners are rebound inside `render()` each time. Moving a listener to module scope breaks it after the next render
 - State shape: `scope` (`global` | `user`), `loading`, `error`, `validation`, `data`, `lastUpdated`. A new field belongs here and in every render branch that reads it
-- `createRequestGate()` from `api/stats-core.js` guards against out-of-order responses. Every `fetchStats` result must pass `isCurrent(requestId)` before writing state
+- `createRequestGate()` from `shared/stats-core.js` guards against out-of-order responses. Every `fetchStats` result must pass `isCurrent(requestId)` before writing state
 - Every render branch that can be reached by a user must be designed. The full matrix: no-JS fallback, global loading, global loaded, creator loading, creator results, creator empty result, degraded upstream error, failed lookup, invalid username, reduced motion
 - Entrance animation runs once. Later renders land immediately, so a scope change never replays the opening and no section can be stranded at `opacity: 0` when the observer misses a frame
 
 ### No simulated telemetry
 
-- The page may not synthesize per-second arrivals, project a total forward, or draw a chart of invented events. Every figure is the API total, or the dated published snapshot when the API is unavailable
+- The page may not synthesize per-second arrivals, project a total forward, or draw a chart of invented events. Every figure is the published data file total, or the dated snapshot when the data files are unavailable
 - The pace line is the 30-day total divided by the window, labelled as a 30-day average. It is arithmetic on sourced data, never a live reading
 - Under `prefers-reduced-motion: reduce`, Lenis smooth scroll and the reveal animations stay off. Each guard is independent on purpose
+
+### Data loading
+
+- The global view fetches `data/stats.json` with `cache: "no-cache"`
+- Creator lookup lazily fetches `data/models.json` once per page and filters it with `filterCreatorModels`. There is no server call
+- A failed model fetch resets the cached promise so the retry button can try again
+- The data files are committed by `update-snapshot.mjs`; the browser never talks to Hugging Face directly
 
 ### Copy and escaping
 
@@ -36,7 +43,7 @@ The browser application. One page, one render function, one state object, one st
 
 - `fallback` and `fallbackAsOf` sit inside the `// snapshot:start` and `// snapshot:end` markers and are rewritten by `update-snapshot.mjs`. Never edit the numbers by hand
 - `fallbackAsOf` is what makes a stale snapshot honest. A degraded view shows `snapshot <date>` rather than a relative "now", because that is what the numbers on screen actually are
-- The same figures appear in `index.html` behind `<!-- snapshot:* -->` markers. Nothing at runtime keeps the two copies in step; `test/snapshot.test.js` does
+- The same figures appear in `index.html` behind `<!-- snapshot:* -->` markers, in `public/data/stats.json`, and in the model list. Nothing at runtime keeps the copies in step; `test/snapshot.test.js` does
 
 ### Styles
 

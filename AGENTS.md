@@ -81,11 +81,11 @@ Heretic Live is a single-page public observability interface for the Heretic mod
 ### Global rails
 
 - Factual copy, methodology, and Hugging Face attribution are product commitments. Do not rewrite them for tone, length, or layout.
-- Reskin and restructure freely. Do not change the API response shape, the 30-day rate math, or the state machine without updating `api/`, `shared/`, and `test/` in the same change.
+- Reskin and restructure freely. Do not change the data file shape, the 30-day rate math, or the state machine without updating `shared/`, `update-snapshot.mjs`, and `test/` in the same change.
 - Public Hugging Face metadata only. No authentication, no private repositories, no secrets, no environment variables.
 - Heretic Live is an unaffiliated third-party observer of the upstream project, not an official surface of it. The methodology, the disclaimer, and the provenance links must appear in both `index.html` and `src/main.js`, because the static fallback is discarded the moment JavaScript runs.
 - The all-time total is a measured sum from public Hub metadata; the per-second pace is the 30-day average. Never present simulated, sampled, or projected telemetry as data.
-- The static HTML publishes figures a crawler reads without JavaScript. Those figures are machine-owned: edit them through `update-snapshot.mjs` or the snapshot markers, never by hand. `test/snapshot.test.js` fails if the two copies disagree or the snapshot goes stale.
+- The static HTML and the two data files publish figures a crawler reads without JavaScript. Those figures are machine-owned: edit them through `update-snapshot.mjs`, never by hand. `test/snapshot.test.js` fails if the copies disagree or the snapshot goes stale.
 - Keep keyboard navigation, visible focus, responsive layout, and `prefers-reduced-motion` behavior working on every change.
 - The dependency list is deliberately tiny (`vite`, `lenis`). Do not add a dependency without a stated need.
 - Never commit `.env` files, credentials, or private Hugging Face data.
@@ -96,17 +96,16 @@ Heretic Live is a single-page public observability interface for the Heretic mod
 | --- | --- |
 | `index.html` | App shell plus the SEO, Open Graph, Twitter, JSON-LD, and no-JavaScript head and fallback copy |
 | `package.json` | Scripts, ESM mode, dependency and devDependency declarations |
-| `vercel.json` | Vercel framework preset, build command, output directory, function duration |
 | `PRODUCT.md` | Product purpose, users, positioning, capabilities, brand commitments |
 | `DESIGN.md` | Binding design system contract: north star, palette, typography, layout, components |
-| `README.md` | Human-facing setup, architecture, API behavior, deployment, and verification documentation |
-| `api/` | Vercel serverless handler and the pure aggregation core |
-| `shared/` | Pure modules imported by both the browser and the tests |
+| `README.md` | Human-facing setup, architecture, data files, deployment, and verification documentation |
+| `shared/` | Pure modules imported by the browser, the refresh script, and the tests |
 | `src/` | Browser application: render, state, styles |
 | `test/` | Node built-in test runner regression suites |
 | `public/` | Files served verbatim at the site root |
 | `.impeccable/` | Generated design-system extraction owned by the impeccable tooling. Regenerate through that tool; do not hand-edit |
-| `.github/` | Verification workflow plus the scheduled published-snapshot refresh |
+| `.github/` | Verification workflow plus GitHub Pages deployment and the scheduled data refresh |
+| `update-snapshot.mjs` | Builds the static data files and the published snapshot from the public Hub API |
 
 ## User Preferences
 
@@ -117,9 +116,8 @@ Heretic Live is a single-page public observability interface for the Heretic mod
 
 ## Child DOX Index
 
-- `api/AGENTS.md` — serverless handler, Hugging Face IO, pagination, dedup, aggregation, cache and CORS policy
-- `shared/AGENTS.md` — runtime-agnostic pure modules: figure copy and username rules
+- `shared/AGENTS.md` — runtime-agnostic pure modules: aggregation, creator filtering, figure copy, and username rules
 - `src/AGENTS.md` — browser application: single-render page, state machine, styles
 - `test/AGENTS.md` — Node built-in test runner suites and their coverage contract
-- `.github/AGENTS.md` — scheduled refresh of the published snapshot
+- `.github/AGENTS.md` — GitHub Pages build and deploy, plus the scheduled data refresh
 - `public/AGENTS.md` — static assets served at the site root, including social and crawler files

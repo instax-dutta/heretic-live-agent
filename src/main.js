@@ -1,5 +1,5 @@
 import Lenis from "lenis";
-import { createRequestGate, estimateDownloadsPerSecond } from "../api/stats-core.js";
+import { aggregate, createRequestGate, estimateDownloadsPerSecond, filterCreatorModels } from "../shared/stats-core.js";
 import { getFigureLabels } from "../shared/figure.js";
 import { isValidUsername, normalizeUsername } from "../shared/username.js";
 
@@ -7,11 +7,11 @@ const app = document.querySelector("#app");
 const nf = new Intl.NumberFormat("en-US");
 
 // snapshot:start
-// Published snapshot used when the upstream API is unreachable, and the only
+// Published snapshot used when the data files are unreachable, and the only
 // figures a text-only retriever ever sees. Refreshed by update-snapshot.mjs;
 // `asOf` dates them so a stale snapshot is honest rather than merely wrong.
-const fallback = { modelCount: 8620, creatorCount: 1823, allTimeDownloads: 89113633, last30DaysDownloads: 14300561 };
-const fallbackAsOf = "2026-11-02T21:42:26.698Z";
+const fallback = { modelCount: 8627, creatorCount: 1828, allTimeDownloads: 89102065, last30DaysDownloads: 14288993 };
+const fallbackAsOf = "2026-11-03T07:16:32.428Z";
 // snapshot:end
 let state = { scope: "global", loading: true, error: "", data: null, lastUpdated: null, validation: "" };
 const requestGate = createRequestGate();
@@ -132,7 +132,7 @@ function render() {
             <p class="figure-sub">${figure.plateFoot}</p>
           </div>
           <p class="estimator-note"><span>${degraded
-            ? "These are the last published figures. The upstream API is unavailable, so they are dated rather than current."
+            ? "These are the last published figures. The data files are unavailable, so they are dated rather than current."
             : "All-time downloads are summed from public Hugging Face metadata and refreshed every 12 hours."}</span></p>
         </section>
 
@@ -248,7 +248,7 @@ function renderMethod() {
         <p>The count favors coverage over a narrow snapshot of popular repositories.</p>
       </div>
       <p class="methods-body">Heretic models are discovered in two passes over the public Hugging Face Hub API: repositories carrying the <code>heretic</code> tag, plus repositories with "heretic" in their name. The two result sets are merged and deduplicated by repository ID before any total is calculated.</p>
-      <p class="methods-body">The totals above are aggregate download counts for public repositories. The <a href="/api/stats" rel="noreferrer">JSON endpoint</a> is the machine-readable source for these figures. It carries an <code>updatedAt</code> timestamp and accepts <code>?username=</code> for a creator-scoped readout. A summary for language models is at <a href="/llms.txt" rel="noreferrer">/llms.txt</a>.</p>
+      <p class="methods-body">The totals above are aggregate download counts for public repositories. The <a href="/data/stats.json" rel="noreferrer">JSON snapshot</a> is the machine-readable source for these figures. It carries an <code>updatedAt</code> timestamp. Creator results are filtered from the published model list. A summary for language models is at <a href="/llms.txt" rel="noreferrer">/llms.txt</a>.</p>
       <p class="provenance">Heretic Live is an independent, unaffiliated third-party index. It is not operated or endorsed by the Heretic maintainers. The counting approach and the original reference figures come from <a href="https://github.com/p-e-w/heretic/issues/450" target="_blank" rel="noreferrer">p-e-w/heretic#450</a>, and the upstream models themselves are at <a href="https://huggingface.co/models?search=heretic" target="_blank" rel="noreferrer">huggingface.co/models?search=heretic</a>.</p>
     </div>
     <ol class="method-list" aria-label="Index methodology">
@@ -264,7 +264,7 @@ function renderLoading(username) {
     <div class="result-head">
       <div>
         <h2>Inspecting @${escapeHtml(username)}</h2>
-        <p>Reading public model metadata from Hugging Face.</p>
+        <p>Reading the published model list.</p>
       </div>
     </div>
     <div class="loading-list" aria-label="Loading creator models"><span></span><span></span><span></span></div>
@@ -279,7 +279,7 @@ function renderUnavailable(username) {
     <div class="empty-mark" aria-hidden="true">&#8709;</div>
     <div class="empty-copy">
       <h2 id="unavailable-title">Could not check @${escapeHtml(username)}.</h2>
-      <p>Hugging Face did not respond, so this creator has not been inspected. The global figures above are the last published snapshot, not @${escapeHtml(username)}'s.</p>
+      <p>The published model list did not load, so this creator has not been inspected. The global figures above are the last published snapshot, not @${escapeHtml(username)}'s.</p>
       <button class="text-button" data-action="retry" type="button">Retry connection</button>
       <button class="text-button" data-action="clear" type="button">Return to global index</button>
     </div>
@@ -319,17 +319,67 @@ function renderUser(models, username, maxDownloads) {
   </section>`;
 }
 
+let modelsPromise = null;
+
+function loadModels() {
+  if (!modelsPromise) {
+    modelsPromise = fetch("data/models.json", { cache: "no-cache" })
+      .then((response) => {
+        if (!response.ok) throw new Error("The published model list is unavailable.");
+        return response.json();
+      })
+      .then((payload) => (Array.isArray(payload?.models) ? payload.models : []))
+      .catch((error) => {
+        modelsPromise = null;
+        throw error;
+      });
+  }
+  return modelsPromise;
+}
+
+async function loadStats() {
+  const response = await fetch("data/stats.json", { cache: "no-cache" });
+  if (!response.ok) throw new Error("The published snapshot is unavailable.");
+  const data = await response.json();
+  if (!data?.totals) throw new Error("The published snapshot is malformed.");
+  return data;
+}
+
 async function fetchStats(username) {
   const requestId = requestGate.start();
   state = { ...state, loading: true, error: "", validation: "", scope: username ? "user" : "global" };
   render();
 
   try {
-    const response = await fetch(`/api/stats${username ? `?username=${encodeURIComponent(username)}` : ""}`);
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Request failed");
+    const [stats, allModels] = await Promise.all([
+      loadStats(),
+      username ? loadModels() : Promise.resolve(null),
+    ]);
     if (!requestGate.isCurrent(requestId)) return;
-    state = { ...state, loading: false, data, lastUpdated: data.updatedAt };
+
+    if (!username) {
+      state = { ...state, loading: false, data: stats, lastUpdated: stats.updatedAt };
+    } else {
+      const models = filterCreatorModels(allModels, username).map((model) => ({
+        ...model,
+        url: `https://huggingface.co/${model.id}`,
+        source: "snapshot",
+      }));
+      state = {
+        ...state,
+        loading: false,
+        data: {
+          ok: true,
+          scope: "user",
+          username,
+          updatedAt: stats.updatedAt,
+          totals: aggregate(models),
+          models,
+          source: stats.source,
+        },
+        lastUpdated: stats.updatedAt,
+      };
+    }
   } catch (error) {
     if (!requestGate.isCurrent(requestId)) return;
     state = { ...state, loading: false, error: error.message, data: { totals: fallback, username, models: [] }, lastUpdated: null };

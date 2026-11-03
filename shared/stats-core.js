@@ -72,6 +72,11 @@ function creatorOf(model) {
   return slash > 0 ? id.slice(0, slash) : "";
 }
 
+export function filterCreatorModels(models, username) {
+  const prefix = `${String(username || "").replace(/^@/, "").toLowerCase()}/`;
+  return models.filter((model) => String(model?.id || "").toLowerCase().startsWith(prefix));
+}
+
 export function aggregate(models) {
   const creators = new Set();
   const totals = models.reduce((totals, model) => {

@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Vite 7.3.6, vanilla JavaScript, native CSS, and a Vercel serverless function.
+Vite 7.3.6, vanilla JavaScript, native CSS, and static JSON data built by GitHub Actions.
 
 ## Users
 
@@ -24,7 +24,7 @@ Heretic Live counts repositories through both the `heretic` tag and model names,
 
 ## Operating Context
 
-The application reads public Hugging Face Hub metadata through a Vercel serverless proxy. The global view shows aggregate download intelligence; the creator lookup shows a ranked readout for one public username. Data is refreshed periodically and remains usable through a published fallback snapshot when the upstream API is unavailable.
+The application reads public Hugging Face Hub metadata through a build-time snapshot that a scheduled GitHub Actions workflow refreshes twice a day. The global view shows aggregate download intelligence; the creator lookup shows a ranked readout for one public username. Data is refreshed periodically and remains usable through a published fallback snapshot when the data files are unavailable.
 
 ## Capabilities and Constraints
 
@@ -45,7 +45,7 @@ The application reads public Hugging Face Hub metadata through a Vercel serverle
 ## Evidence on Hand
 
 - Existing UI and interaction implementation in `index.html`, `src/main.js`, and `src/style.css`.
-- Public-data aggregation and creator lookup behavior in `api/stats.js` and `api/stats-core.js`.
+- Public-data aggregation in `shared/stats-core.js`, the refresh script in `update-snapshot.mjs`, and the client-side creator filter in `src/main.js`.
 - Native regression coverage in `test/`.
 - Methodology reference: https://github.com/p-e-w/heretic/issues/450
 - No customer testimonials, paid claims, or private usage data are available.

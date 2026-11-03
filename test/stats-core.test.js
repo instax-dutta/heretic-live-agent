@@ -5,9 +5,10 @@ import {
   collectModels,
   createRequestGate,
   estimateDownloadsPerSecond,
+  filterCreatorModels,
   fetchAllModels,
   withModelExpansions,
-} from "../api/stats-core.js";
+} from "../shared/stats-core.js";
 
 test("fetchAllModels follows the Hub next-page URL and preserves all models", async () => {
   const pages = [
@@ -85,6 +86,20 @@ test("aggregate mean lifetime downloads rounds to whole downloads", () => {
 
   assert.equal(totals.meanLifetimeDownloads, 101, "201 / 2 = 100.5 must round up");
   assert.equal(aggregate([]).meanLifetimeDownloads, 0);
+});
+
+test("filterCreatorModels returns only that creator's repositories, case-insensitively", () => {
+  const models = [
+    { id: "Alice/one" },
+    { id: "alice/two" },
+    { id: "bob/three" },
+    { id: "alice-two/four" },
+  ];
+
+  assert.deepEqual(
+    filterCreatorModels(models, "@Alice").map((model) => model.id),
+    ["Alice/one", "alice/two"],
+  );
 });
 
 test("estimateDownloadsPerSecond derives the per-second rate from 30-day volume", () => {
