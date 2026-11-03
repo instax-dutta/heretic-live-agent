@@ -99,8 +99,9 @@ The site is a static Vite build. `.github/workflows/pages.yml` builds `dist/` an
 
 1. In GitHub, open Settings -> Pages and set Source to GitHub Actions.
 2. Add the custom domain `heretic.sdad.pro` and keep the `public/CNAME` file in the repo.
-3. At the DNS provider, point `heretic` to `instax-dutta.github.io` with a CNAME record. Remove the old Vercel record.
-4. Push to `main` or run the workflow manually.
+3. At the DNS provider, point `heretic` to `instax-dutta.github.io` with a CNAME record. Set it to DNS only, not proxied; a Cloudflare proxy can block GitHub's certificate check. Remove the old Vercel record.
+4. In Vercel, remove the custom domain from the project and delete or disconnect the project so it stops deploying on pushes.
+5. Push to `main` or run the workflow manually. GitHub Pages provisions HTTPS after DNS resolves.
 
 The same workflow refreshes the data twice a day and deploys the refreshed build in that run. No environment variables are required.
 
