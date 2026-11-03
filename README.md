@@ -13,7 +13,7 @@ Heretic Live is a public index of the Heretic model ecosystem on Hugging Face. I
 - Discovery through both the `heretic` tag and model names
 - Deduplication by repository ID across both searches
 - Cursor-paginated Hugging Face API reads
-- Published fallback values when the upstream API is unavailable
+- Published fallback values when the data files are unavailable
 - Creator-scoped figure labels, so a creator's total is never shown under the global caption
 - Lenis smooth scrolling, skipped when the reader asks for reduced motion
 - Keyboard-accessible, responsive interface
@@ -23,12 +23,12 @@ Heretic Live is a public index of the Heretic model ecosystem on Hugging Face. I
 The project is small and has few dependencies:
 
 - Frontend: Vite, vanilla JavaScript, and native CSS
-- API: a Vercel serverless function at `api/stats.js`
+- Data: two JSON files built by `update-snapshot.mjs`
 - Data source: public Hugging Face Hub model metadata
-- Hosting: Vercel
-- Tests: Node.js built-in test runner
+- Hosting: GitHub Pages
+- Automation: GitHub Actions
 
-The browser calls the serverless API rather than Hugging Face directly. That keeps upstream requests in one place, where the function handles caching, pagination, filtering, deduplication, and degraded-data responses.
+GitHub Pages serves static files only. A scheduled workflow fetches Hugging Face, deduplicates the repositories, writes `public/data/stats.json` and `public/data/models.json`, and commits them. The browser reads those files. Creator lookup filters the published model list locally.
 
 ## Requirements
 
@@ -44,7 +44,7 @@ npm install
 npm run dev
 ```
 
-Vite prints the local URL. You can work on the frontend on its own, but creator lookup needs an environment that serves `api/stats.js`.
+Vite prints the local URL. The data files in `public/data/` are committed, so the global view and creator lookup both work locally. Run `node update-snapshot.mjs` to refresh them.
 
 ## Commands
 
@@ -57,38 +57,26 @@ Vite prints the local URL. You can work on the frontend on its own, but creator 
 
 ## Data methodology
 
-The API runs two Hugging Face model searches:
+The refresh script runs two Hugging Face model searches:
 
 1. Repositories carrying the `heretic` tag
 2. Repositories whose model name contains `heretic`
 
 Both searches follow Hugging Face cursor pagination up to a bounded safety limit. Results are merged and deduplicated by repository ID before totals are calculated. Creator results are sorted by lifetime downloads.
 
-The aggregate also reports the number of distinct publishing namespaces, so one creator with many repositories counts once. It reports the mean lifetime downloads per indexed model as well. That mean is an API field only and is not rendered in the interface.
+The aggregate also reports the number of distinct publishing namespaces, so one creator with many repositories counts once. It reports the mean lifetime downloads per indexed model as well. That mean is in `stats.json` only and is not rendered in the interface.
 
 The methodology comes from the public Heretic discussion and reference material in [p-e-w/heretic issue #450](https://github.com/p-e-w/heretic/issues/450).
 
-## API behavior
+## Data files
 
-The Vercel function is available at `/api/stats`.
+`public/data/stats.json` holds the global totals. `public/data/models.json` holds the deduplicated model list. Both are built and committed by `update-snapshot.mjs`.
 
-### Global index
+`stats.json` contains `updatedAt`, `totals`, and `source`. `models.json` contains `updatedAt` and one entry per repository with `id`, `downloads`, and `downloadsAllTime`, sorted by lifetime downloads.
 
-```text
-GET /api/stats
-```
+Usernames may contain letters, numbers, periods, underscores, and hyphens, up to 96 characters. The site uses public metadata only. It does not access private repositories or require credentials.
 
-### Creator lookup
-
-```text
-GET /api/stats?username=<hugging-face-username>
-```
-
-`HEAD` returns the same status and headers as `GET`, with no body. `OPTIONS` answers preflight with `204 No Content`. Any other method returns `405`.
-
-Usernames may contain letters, numbers, periods, underscores, and hyphens, up to 96 characters. The API returns public metadata only. It does not access private repositories or require credentials.
-
-The API sets a 12-hour shared cache with stale-while-revalidate behavior. It returns CORS headers on normal and error responses and falls back to an explicit degraded-data response when Hugging Face is unavailable. In that case the frontend shows its published fallback snapshot.
+The files are refreshed every 12 hours. When they are unavailable, the page falls back to the figures published in its own HTML and JavaScript.
 
 ## Verification
 
@@ -98,30 +86,23 @@ Run these checks before opening a pull request or deploying:
 npm test
 npm run build
 node --check src/main.js
-node --check api/stats.js
-node --check api/stats-core.js
+node --check shared/stats-core.js
+node --check update-snapshot.mjs
 npm audit --audit-level=high
 ```
 
-The tests cover pagination, expansion parameters, deduplication, ranking, aggregate totals, unique-creator counting, 30-day rate estimation, figure scope labels, username validation, stale-request protection, cache policy, HTTP method handling, and CORS preflight behavior.
+The tests cover pagination, expansion parameters, deduplication, ranking, aggregate totals, unique-creator counting, 30-day rate estimation, creator filtering, figure scope labels, username validation, stale-request protection, and static snapshot consistency.
 
-## Deployment to Vercel
+## Deployment to GitHub Pages
 
-The repository includes `vercel.json` with these settings:
+The site is a static Vite build. `.github/workflows/pages.yml` builds `dist/` and deploys it with GitHub Pages.
 
-- Framework: Vite
-- Build command: `npm run build`
-- Output directory: `dist`
-- Serverless function: `api/stats.js`
+1. In GitHub, open Settings -> Pages and set Source to GitHub Actions.
+2. Add the custom domain `heretic.sdad.pro` and keep the `public/CNAME` file in the repo.
+3. At the DNS provider, point `heretic` to `instax-dutta.github.io` with a CNAME record. Remove the old Vercel record.
+4. Push to `main` or run the workflow manually.
 
-To deploy:
-
-1. Import the GitHub repository into Vercel.
-2. Keep the detected Vite preset.
-3. Check the build command and output directory against the settings above.
-4. Deploy.
-
-No environment variables are required for the current public-data implementation.
+The same workflow refreshes the data twice a day and deploys the refreshed build in that run. No environment variables are required.
 
 ## Search and AI discoverability
 
@@ -129,10 +110,10 @@ The site includes crawlability and social-sharing files:
 
 - `public/robots.txt` permits indexing and points to the sitemap.
 - `public/sitemap.xml` lists the canonical homepage URL. Its `lastmod` comes from the snapshot date, because the published figures move twice a day.
-- `public/llms.txt` summarizes the product, methodology, API, limitations, and provenance for AI systems. `index.html` links it with `rel="alternate"`.
+- `public/llms.txt` summarizes the product, methodology, data files, limitations, and provenance for AI systems. `index.html` links it with `rel="alternate"`.
 - `index.html` carries canonical, Open Graph, Twitter card, and JSON-LD metadata.
 - The methodology prose, the entity disclaimer, and the outbound links appear in both `index.html` and `src/main.js`. The static fallback disappears the moment JavaScript runs, so a link that exists only there is a link no visitor and no rendering crawler sees.
-- The page links `/api/stats` as the authoritative machine-readable surface.
+- The page links `/data/stats.json` as the machine-readable surface.
 - `public/og-image.png` is the 1200×630 card used for social previews.
 
 The social metadata points to the PNG because Discord, WhatsApp, and some other link unfurlers do not reliably render SVG Open Graph images.
@@ -151,24 +132,26 @@ Provenance: the card was generated externally with an image model, then cropped 
 
 The homepage is a static build, but it publishes download totals and a unique-creator count that change every 12 hours. A crawler reading the served HTML sees those figures and nothing else. If they are never refreshed, the site serves a wrong number to any AI agent that reads it.
 
-`update-snapshot.mjs` fetches `/api/stats` and rewrites the figures in two places:
+`update-snapshot.mjs` fetches Hugging Face directly and writes the published data in one pass:
 
+- `public/data/stats.json` for the global totals
+- `public/data/models.json` for the creator lookup
 - `index.html`, inside `<!-- snapshot:* -->` marker pairs, so the served HTML carries the same numbers
-- `src/main.js`, between the `// snapshot:start` and `// snapshot:end` markers, as the client fallback used when the upstream API is unreachable
+- `src/main.js`, between the `// snapshot:start` and `// snapshot:end` markers, as the client fallback
+- `public/sitemap.xml`, so its `lastmod` matches the snapshot
 
 ```bash
 node update-snapshot.mjs --dry-run   # report what would change, write nothing
 node update-snapshot.mjs             # write the snapshot
-node update-snapshot.mjs --api <url> # point at a different deployment
 ```
 
 The script is idempotent. When the upstream snapshot has not changed, it writes no file, so a scheduled run produces no empty commit. It exits non-zero on any upstream problem instead of leaving yesterday's figures quietly in place. It also refuses to move the published figures backwards if the upstream cache hands back an older snapshot.
 
-`.github/workflows/update-snapshot.yml` runs it twice a day, matching the API's own 12-hour cache, and commits only when something changed. It needs no secrets. `/api/stats` is public, so the workflow requires only `contents: write`.
+`.github/workflows/pages.yml` runs it twice a day and commits only when the data changed. It also builds and deploys the site in the same run. The workflow needs `contents: write`, `pages: write`, and `id-token: write`.
 
 Two guards back this up:
 
-- `test/snapshot.test.js` fails if `index.html` and `src/main.js` ever publish different figures, if the published creator count is not a positive number no larger than the model count, if the derived recent-share does not match the published numbers, or if the snapshot carries no date.
+- `test/snapshot.test.js` fails if the data files disagree with `index.html` or `src/main.js`, if the published creator count is not a positive number no larger than the model count, if the derived recent-share does not match the published numbers, or if the snapshot carries no date.
 - The same suite fails if the snapshot is older than 30 days. That is the alarm for automation that has stopped. GitHub disables scheduled workflows after 60 days of repository inactivity, and a revoked token fails quietly. Without the check, a dead job would look like a healthy page.
 
 Every published figure is dated in the markup, so a snapshot that does go stale reads as dated, not current.

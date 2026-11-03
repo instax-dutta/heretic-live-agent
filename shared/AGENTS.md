@@ -2,15 +2,23 @@
 
 ## Purpose
 
-Small pure modules that more than one runtime needs. Today: the scope-aware figure copy and the Hugging Face username rules.
+Small pure modules that more than one runtime needs. Today: aggregation and creator filtering, the scope-aware figure copy, and the Hugging Face username rules.
 
 ## Ownership
 
+- `stats-core.js` owns pagination, expansion parameters, tag-plus-name discovery, deduplication, ranking, aggregation, creator filtering, 30-day rate estimation, and the request gate
 - `figure.js` owns the wording that keeps a creator's totals from being presented under the global caption
 - `username.js` owns normalization and validation of a Hugging Face username
-- Owns no rendering, no fetching, no node built-ins. These files run in the browser, in the serverless function, and in the test runner unchanged
+- Owns no rendering, no fetching, no node built-ins. These files run in the browser, in the refresh script, and in the test runner unchanged
 
 ## Local Contracts
+
+### Aggregation
+
+- `collectModels` deduplicates by repository ID, with the tagged pass winning, then sorts by lifetime downloads
+- `aggregate` sums `downloadsAllTime` and the rolling 30-day `downloads`, counts unique creator namespaces, and rounds `meanLifetimeDownloads`
+- `filterCreatorModels` matches the namespace case-insensitively, ignores a leading `@`, and keeps the input order
+- `fetchAllModels` follows the Hub cursor and throws past `maxPages`; a silent truncation would understate every total
 
 ### Scope safety
 
@@ -22,13 +30,13 @@ Small pure modules that more than one runtime needs. Today: the scope-aware figu
 ### Username rules
 
 - `normalizeUsername` trims and strips a single leading `@`
-- `isValidUsername` is `^[a-zA-Z0-9._-]{1,96}$`. The browser and the API must agree, and they share this file precisely so they cannot drift
+- `isValidUsername` is `^[a-zA-Z0-9._-]{1,96}$`. The browser and the refresh script must agree, and they share this file precisely so they cannot drift
 - Validation runs after normalization, never before
 
 ### Module rules
 
 - ESM, zero dependencies, no side effects on import
-- A new module earns its place here only when at least two of `src/`, `api/`, and `test/` need it. Logic used by one runtime belongs in that runtime
+- A new module earns its place here only when at least two of `src/`, `update-snapshot.mjs`, and `test/` need it. Logic used by one runtime belongs in that runtime
 
 ## Work Guidance
 
@@ -37,7 +45,7 @@ Small pure modules that more than one runtime needs. Today: the scope-aware figu
 
 ## Verification
 
-- `npm test` covers both modules (`test/figure.test.js`, `test/username.test.js`)
+- `npm test` covers all three modules (`test/stats-core.test.js`, `test/figure.test.js`, `test/username.test.js`)
 - A new module lands with its own suite in the same change
 
 ## Child DOX Index

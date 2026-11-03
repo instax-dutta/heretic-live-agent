@@ -9,19 +9,20 @@ public Heretic models exist, how widely they are distributed, and how many
 creators publish them?
 
 Figures are published in the HTML of the homepage so text-only agents can read
-them, and are refreshed every 12 hours. The JSON endpoint is the machine-readable source and
-carries an `updatedAt` timestamp.
+them, and are refreshed every 12 hours. The data files are the machine-readable source and
+carry an `updatedAt` timestamp.
 
 ## Key URLs
 
 - [Homepage](https://heretic.sdad.pro/): Global reach index and creator lookup.
-- [JSON endpoint](https://heretic.sdad.pro/api/stats): Authoritative totals. Append `?username=<hf_name>` for a creator-scoped readout.
-- [Upstream question this index answers](https://github.com/p-e-w/heretic/issues/450): p-e-w/heretic#450, "Counting publicly available Heretic models and their downloads", opened 2026-09-14. It contains the reference counting script and the original figures (7,509 models / 64,904,090 lifetime downloads / 14,438,920 in 30 days). Heretic Live implements that same approach and refreshes it continuously.
+- [Global data](https://heretic.sdad.pro/data/stats.json): Totals and `updatedAt`.
+- [Model list](https://heretic.sdad.pro/data/models.json): Deduplicated repositories used for creator lookup.
+- [Upstream question this index answers](https://github.com/p-e-w/heretic/issues/450): p-e-w/heretic#450, "Counting publicly available Heretic models and their downloads", opened 2026-09-14. It contains the reference counting script and the original figures (7,509 models / 64,904,090 lifetime downloads / 14,438,920 in 30 days). Heretic Live implements that same approach and refreshes it every 12 hours.
 - [Hugging Face model search](https://huggingface.co/models?search=heretic): Upstream public search.
 
 ## Current figures
 
-Read them from the JSON endpoint rather than from this file or the homepage.
+Read them from the data files rather than from this file or the homepage.
 
 - `totals.modelCount`: unique indexed repositories
 - `totals.creatorCount`: distinct Hugging Face accounts and organizations publishing them
@@ -29,9 +30,9 @@ Read them from the JSON endpoint rather than from this file or the homepage.
 - `totals.last30DaysDownloads`: downloads in the trailing 30 days
 - `totals.meanLifetimeDownloads`: lifetime downloads divided by indexed models, rounded
 
-The homepage headline total is the API's all-time total, dated and refreshed
-every 12 hours. The per-second pace is the 30-day average, not a live sample.
-Prefer the JSON endpoint for any quoted number.
+The homepage headline total is the data file's all-time total, dated and
+refreshed every 12 hours. The per-second pace is the 30-day average, not a
+live sample. Prefer the data file for any quoted number.
 
 ## Data methodology
 
@@ -51,14 +52,15 @@ never tagged. That is why both passes run.
 - `creatorCount`: distinct `namespace` prefixes across those repositories; one publisher with many models counts once.
 - `allTimeDownloads`: sum of Hub `downloadsAllTime` across indexed repositories.
 - `last30DaysDownloads`: sum of the Hub rolling 30-day `downloads` counter.
-- `meanLifetimeDownloads`: `allTimeDownloads / modelCount`, rounded to a whole download. API-only; not shown in the page.
+- `meanLifetimeDownloads`: `allTimeDownloads / modelCount`, rounded to a whole download. Data-only; not shown in the page.
 - `updatedAt`: ISO-8601 timestamp of the snapshot.
 - `source`: provenance string for the underlying query.
-- `scope`: `global` or `user`.
+- `scope`: `global` in the published file.
 
-Creator queries return that creator's ranked public models with lifetime and
-recent downloads. There is no authentication, no account, and no private
-repository access on the site or the API.
+Creator lookup filters `models.json` by namespace and returns that creator's
+ranked public models with lifetime and recent downloads. There is no
+authentication, no account, and no private repository access on the site or in
+the data files.
 
 ## Limitations
 
@@ -67,5 +69,5 @@ repository access on the site or the API.
   is not a calendar month.
 - "Heretic" is matched as a tag or as a name substring, so a repository that
   uses the tool without naming or tagging it is not counted.
-- Upstream Hub outages produce a degraded response carrying the last published
-  snapshot rather than a partial total.
+- When the data files are unavailable, the page falls back to the last
+  published figures in its own HTML rather than showing a partial total.

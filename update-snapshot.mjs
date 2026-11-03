@@ -1,38 +1,35 @@
 #!/usr/bin/env node
 /**
- * Refresh the published snapshot in the static HTML and the client fallback.
+ * Refresh the published snapshot and the static data files.
  *
- * The homepage is a static build, but it publishes figures that change every 12
- * hours. A crawler reading the served HTML sees those figures and nothing else,
- * so if they are never refreshed the site confidently serves a wrong number to
- * every AI agent that reads it. This script fetches the live API and rewrites
- * both copies from a single source.
+ * GitHub Pages cannot run the old serverless function, so this script does the
+ * Hugging Face work ahead of time. It writes:
  *
- * Every machine-written value sits inside a uniquely named marker pair, so the
- * rewrite does not depend on document order and a missing region fails loudly
- * rather than landing in the wrong element.
+ *   public/data/stats.json   global totals for the page and machine readers
+ *   public/data/models.json  the deduplicated model list used for creator lookup
+ *   index.html               the crawlable figures behind snapshot markers
+ *   src/main.js              the client fallback used when data files fail
+ *   public/sitemap.xml       the honest lastmod for the page
  *
- * The script is idempotent: when nothing changed it writes no file at all, so a
- * scheduled run that finds no new data does not produce an empty commit.
+ * It is idempotent: when the model list has not changed it reuses the previous
+ * timestamp and writes no file, so a scheduled run produces no empty commit.
  *
  * Usage:
- *   node update-snapshot.mjs [--api <url>] [--dry-run]
+ *   node update-snapshot.mjs [--dry-run]
  *
- * Exits non-zero on any upstream problem, so a failed run is visible in CI
- * rather than silently leaving the previous figures in place.
+ * Exits non-zero on any upstream problem, so a failed run is visible in CI.
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { aggregate, collectModels, fetchAllModels, withModelExpansions } from "./shared/stats-core.js";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
-// The marker stands in for the element it wraps, so the replacement
-// sits at the marker's own indentation rather than a level deeper.
-const INDENT_STEP = "";
+const HF_API = "https://huggingface.co/api/models";
+const FETCH_TIMEOUT_MS = 25000;
+const MAX_PAGES = 100;
 
 const args = process.argv.slice(2);
-const apiFlag = args.indexOf("--api");
-const API = apiFlag !== -1 ? args[apiFlag + 1] : "https://heretic.sdad.pro/api/stats";
 const DRY_RUN = args.includes("--dry-run");
 
 const nf = new Intl.NumberFormat("en-US");
@@ -44,6 +41,44 @@ function fail(message) {
 
 function read(rel) {
   return readFileSync(resolve(ROOT, rel), "utf8");
+}
+
+function readIfExists(rel) {
+  const path = resolve(ROOT, rel);
+  return existsSync(path) ? readFileSync(path, "utf8") : null;
+}
+
+function getNextLink(response) {
+  const link = response.headers.get("link") || "";
+  const match = link.match(/<([^>]+)>;\s*rel=["']next["']/i);
+  return match?.[1] || null;
+}
+
+async function getModels(params) {
+  return fetchAllModels(async (pageParams) => {
+    const url = typeof pageParams === "string" ? withModelExpansions(pageParams) : new URL(HF_API);
+    if (typeof pageParams !== "string") {
+      Object.entries(pageParams).forEach(([key, value]) => url.searchParams.set(key, value));
+      url.searchParams.append("expand[]", "downloads");
+      url.searchParams.append("expand[]", "downloadsAllTime");
+      url.searchParams.append("expand[]", "tags");
+    }
+
+    const response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    if (!response.ok) throw new Error(`Hugging Face returned ${response.status}`);
+    const data = await response.json();
+    if (!Array.isArray(data)) throw new Error("Hugging Face returned an invalid model list.");
+    return { models: data, next: getNextLink(response) };
+  }, params, { maxPages: MAX_PAGES });
+}
+
+async function fetchModels() {
+  const common = { sort: "downloads", direction: "-1", limit: "1000" };
+  const [tagged, named] = await Promise.all([
+    getModels({ ...common, filter: "heretic" }),
+    getModels({ ...common, search: "heretic" }),
+  ]);
+  return collectModels(tagged, named);
 }
 
 /**
@@ -65,56 +100,74 @@ function replaceMarkedRegion(source, startMarker, endMarker, innerLines) {
   const indent = (lines[start].match(/^\s*/) || [""])[0];
   const block = [
     indent + startMarker,
-    ...innerLines.map((line) => (line === "" ? "" : indent + INDENT_STEP + line)),
+    ...innerLines.map((line) => (line === "" ? "" : indent + line)),
     indent + endMarker,
   ];
   lines.splice(start, end - start + 1, ...block);
   return lines.join("\n");
 }
 
-async function fetchSnapshot() {
-  let response;
-  try {
-    response = await fetch(API, { headers: { accept: "application/json" } });
-  } catch (error) {
-    fail(`could not reach ${API}: ${error.message}`);
-  }
-  if (!response.ok) fail(`${API} returned HTTP ${response.status}`);
-
-  let data;
-  try {
-    data = await response.json();
-  } catch (error) {
-    fail(`${API} did not return JSON: ${error.message}`);
-  }
-
-  const t = data?.totals;
-  const sane = t
-    && Number.isFinite(t.modelCount) && t.modelCount > 0
-    && Number.isFinite(t.creatorCount) && t.creatorCount > 0
-    && Number.isFinite(t.allTimeDownloads) && t.allTimeDownloads > 0
-    && Number.isFinite(t.last30DaysDownloads);
-  if (!sane) fail(`${API} returned a malformed totals block (needs modelCount, creatorCount, allTimeDownloads, last30DaysDownloads)`);
-  if (!data.updatedAt || !Number.isFinite(new Date(data.updatedAt).getTime())) {
-    fail(`${API} returned an unusable updatedAt timestamp`);
-  }
-  return { totals: t, updatedAt: data.updatedAt };
+let models;
+try {
+  models = await fetchModels();
+} catch (error) {
+  fail(`could not read Hugging Face: ${error.message}`);
 }
 
-const { totals, updatedAt } = await fetchSnapshot();
+const totals = aggregate(models);
+const sane = Number.isFinite(totals.modelCount) && totals.modelCount > 0
+  && Number.isFinite(totals.creatorCount) && totals.creatorCount > 0
+  && Number.isFinite(totals.allTimeDownloads) && totals.allTimeDownloads > 0
+  && Number.isFinite(totals.last30DaysDownloads);
+if (!sane) fail("Hugging Face returned a malformed totals block");
 
-const stamp = new Date(updatedAt);
-const iso = stamp.toISOString();
+const publicModels = models.map(({ id, downloads, downloadsAllTime }) => ({
+  id,
+  downloads,
+  downloadsAllTime,
+}));
+const modelsPayload = JSON.stringify(publicModels);
+
+// Reuse the previous timestamp when the model list is unchanged, so an
+// unchanged run writes nothing and does not create an empty commit.
+const existingModels = readIfExists("public/data/models.json");
+let updatedAt = new Date().toISOString();
+if (existingModels) {
+  try {
+    const existing = JSON.parse(existingModels);
+    if (JSON.stringify(existing.models) === modelsPayload && existing.updatedAt) {
+      updatedAt = existing.updatedAt;
+    }
+  } catch {
+    // A malformed or missing file just means this run writes a fresh one.
+  }
+}
+
+const iso = new Date(updatedAt).toISOString();
 const day = iso.slice(0, 10);
 const share = ((totals.last30DaysDownloads / totals.allTimeDownloads) * 100).toFixed(1);
 
+const stats = {
+  ok: true,
+  scope: "global",
+  username: null,
+  updatedAt: iso,
+  totals,
+  source: "Hugging Face Hub API · heretic tag + name search",
+};
+const statsJson = `${JSON.stringify(stats, null, 2)}\n`;
+const modelsJson = `${JSON.stringify({ updatedAt: iso, models: publicModels })}\n`;
+
 const htmlBefore = read("index.html");
 const jsBefore = read("src/main.js");
+const sitemapBefore = read("public/sitemap.xml");
+const statsBefore = readIfExists("public/data/stats.json");
+const modelsBefore = readIfExists("public/data/models.json");
 
-// A snapshot older than the published one means the upstream cache handed back
-// something stale; writing it would move the figures backwards.
+// A snapshot older than the published one means something is wrong with the
+// clock or the data source. Never move the figures backwards in time.
 const published = jsBefore.match(/const fallbackAsOf = "([^"]+)";/)?.[1];
-if (published && new Date(published).getTime() > stamp.getTime()) {
+if (published && new Date(published).getTime() > new Date(updatedAt).getTime()) {
   console.log(`update-snapshot: published ${published} is newer than upstream ${iso}; nothing to do`);
   process.exit(0);
 }
@@ -133,17 +186,13 @@ for (const [name, inner] of htmlRegions) {
 }
 
 const js = replaceMarkedRegion(jsBefore, "// snapshot:start", "// snapshot:end", [
-  "// Published snapshot used when the upstream API is unreachable, and the only",
+  "// Published snapshot used when the data files are unreachable, and the only",
   "// figures a text-only retriever ever sees. Refreshed by update-snapshot.mjs;",
   "// `asOf` dates them so a stale snapshot is honest rather than merely wrong.",
   `const fallback = { modelCount: ${totals.modelCount}, creatorCount: ${totals.creatorCount}, allTimeDownloads: ${totals.allTimeDownloads}, last30DaysDownloads: ${totals.last30DaysDownloads} };`,
   `const fallbackAsOf = "${iso}";`,
 ]);
 
-// The snapshot date is the last real content change for this URL, so it is
-// also the honest lastmod. Without this the sitemap claims the page has not
-// changed since the issue date while the published figures move twice a day.
-const sitemapBefore = read("public/sitemap.xml");
 const sitemap = replaceMarkedRegion(
   sitemapBefore,
   "<!-- snapshot:lastmod -->",
@@ -151,7 +200,11 @@ const sitemap = replaceMarkedRegion(
   [`<lastmod>${iso.slice(0, 19)}Z</lastmod>`],
 );
 
-const changed = html !== htmlBefore || js !== jsBefore || sitemap !== sitemapBefore;
+const changed = html !== htmlBefore
+  || js !== jsBefore
+  || sitemap !== sitemapBefore
+  || statsJson !== statsBefore
+  || modelsJson !== modelsBefore;
 
 if (DRY_RUN) {
   console.log("update-snapshot: dry run, no files written");
@@ -159,6 +212,7 @@ if (DRY_RUN) {
   console.log(`  creators ${nf.format(totals.creatorCount)}`);
   console.log(`  lifetime ${nf.format(totals.allTimeDownloads)}`);
   console.log(`  30 days ${nf.format(totals.last30DaysDownloads)} (${share}%)`);
+  console.log(`  mean ${nf.format(totals.meanLifetimeDownloads)}`);
   console.log(`  as of ${iso}`);
   console.log(`  would change files: ${changed}`);
   process.exit(0);
@@ -169,8 +223,11 @@ if (!changed) {
   process.exit(0);
 }
 
+mkdirSync(resolve(ROOT, "public/data"), { recursive: true });
+writeFileSync(resolve(ROOT, "public/data/stats.json"), statsJson);
+writeFileSync(resolve(ROOT, "public/data/models.json"), modelsJson);
 writeFileSync(resolve(ROOT, "index.html"), html);
 writeFileSync(resolve(ROOT, "src/main.js"), js);
 writeFileSync(resolve(ROOT, "public/sitemap.xml"), sitemap);
 console.log(`update-snapshot: wrote snapshot as of ${iso}`);
-  console.log(`  models ${nf.format(totals.modelCount)} | creators ${nf.format(totals.creatorCount)} | lifetime ${nf.format(totals.allTimeDownloads)} | 30 days ${nf.format(totals.last30DaysDownloads)} (${share}%)`);
+console.log(`  models ${nf.format(totals.modelCount)} | creators ${nf.format(totals.creatorCount)} | lifetime ${nf.format(totals.allTimeDownloads)} | 30 days ${nf.format(totals.last30DaysDownloads)} (${share}%)`);

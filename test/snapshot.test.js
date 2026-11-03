@@ -6,12 +6,14 @@ import { dirname, resolve } from "node:path";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-// The API refreshes every 12 hours. This tolerance is deliberately far looser:
+// The data refreshes every 12 hours. This tolerance is deliberately far looser:
 // it exists to catch automation that has stopped, not to police the cadence.
 const MAX_SNAPSHOT_AGE_DAYS = 30;
 
 const html = readFileSync(resolve(ROOT, "index.html"), "utf8");
 const js = readFileSync(resolve(ROOT, "src/main.js"), "utf8");
+const stats = JSON.parse(readFileSync(resolve(ROOT, "public/data/stats.json"), "utf8"));
+const modelData = JSON.parse(readFileSync(resolve(ROOT, "public/data/models.json"), "utf8"));
 
 function region(source, name) {
   const match = source.match(
@@ -57,6 +59,32 @@ test("the static HTML and the client fallback publish the same figures", () => {
   assert.equal(regionText(html, "d30"), d30.toLocaleString("en-US"));
 });
 
+test("the published data files agree with the inline snapshot", () => {
+  const fallback = js.match(
+    /const fallback = \{ modelCount: (\d+), creatorCount: (\d+), allTimeDownloads: (\d+), last30DaysDownloads: (\d+) \};/,
+  );
+  assert.ok(fallback, "src/main.js no longer declares a parsable fallback object");
+
+  const [models, creators, lifetime, d30] = fallback.slice(1).map(Number);
+
+  assert.equal(stats.totals.modelCount, models);
+  assert.equal(stats.totals.creatorCount, creators);
+  assert.equal(stats.totals.allTimeDownloads, lifetime);
+  assert.equal(stats.totals.last30DaysDownloads, d30);
+  assert.equal(modelData.models.length, models);
+  assert.equal(modelData.updatedAt, stats.updatedAt);
+
+  const uniqueCreators = new Set(modelData.models.map((model) => model.id.split("/")[0]));
+  assert.equal(uniqueCreators.size, creators, "creatorCount must match the model list");
+
+  for (let i = 1; i < modelData.models.length; i += 1) {
+    assert.ok(
+      modelData.models[i - 1].downloadsAllTime >= modelData.models[i].downloadsAllTime,
+      "the model list must stay ranked by lifetime downloads",
+    );
+  }
+});
+
 test("the published recent-share matches the published figures", () => {
   const [, lifetime, d30] = js
     .match(/const fallback = \{ modelCount: \d+, creatorCount: \d+, allTimeDownloads: (\d+), last30DaysDownloads: (\d+) \};/)
@@ -96,13 +124,15 @@ test("the refresh workflow stages every file the updater writes", () => {
   // The updater rewrites these files; the scheduled workflow commits by path.
   // A path written but not staged is silently modified in the runner's working
   // tree and never lands, which is the failure mode this guards.
-  const workflow = readFileSync(resolve(ROOT, ".github/workflows/update-snapshot.yml"), "utf8");
+  const workflow = readFileSync(resolve(ROOT, ".github/workflows/pages.yml"), "utf8");
   const updater = readFileSync(resolve(ROOT, "update-snapshot.mjs"), "utf8");
 
-  const written = [...updater.matchAll(/resolve\(ROOT, "([^"]+)"\)/g)].map((m) => m[1]);
+  const written = [...updater.matchAll(/resolve\(ROOT, "([^"]+)"\)/g)]
+    .map((match) => match[1])
+    .filter((file) => file.includes("."));
   const staged = workflow.match(/git add ([^\n]+)/)?.[1].split(/\s+/) ?? [];
 
-  assert.ok(written.length >= 3, "expected the updater to write at least three files");
+  assert.ok(written.length >= 5, "expected the updater to write at least five files");
   for (const file of written) {
     assert.ok(staged.includes(file), `update-snapshot.mjs writes ${file} but the workflow does not stage it`);
   }
