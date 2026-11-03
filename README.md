@@ -28,7 +28,7 @@ The project is small and has few dependencies:
 - Hosting: GitHub Pages
 - Automation: GitHub Actions
 
-GitHub Pages serves static files only. A scheduled workflow fetches Hugging Face, deduplicates the repositories, writes `public/data/stats.json` and `public/data/models.json`, and commits them. The browser reads those files. Creator lookup filters the published model list locally.
+GitHub Pages serves static files only. A scheduled workflow fetches Hugging Face, deduplicates the repositories, writes `public/data/stats.json`, `public/data/models.json`, and the per-initial shards, then commits them. The browser reads those files. Creator lookup filters the published model list locally.
 
 ## Requirements
 
@@ -70,9 +70,9 @@ The methodology comes from the public Heretic discussion and reference material 
 
 ## Data files
 
-`public/data/stats.json` holds the global totals. `public/data/models.json` holds the deduplicated model list. Both are built and committed by `update-snapshot.mjs`.
+`public/data/stats.json` holds the global totals. `public/data/models.json` holds the complete deduplicated model list. `public/data/models/<key>.json` holds one shard per first character. All are built and committed by `update-snapshot.mjs`.
 
-`stats.json` contains `updatedAt`, `totals`, and `source`. `models.json` contains `updatedAt` and one entry per repository with `id`, `downloads`, and `downloadsAllTime`, sorted by lifetime downloads.
+`stats.json` contains `updatedAt`, `totals`, and `source`. `models.json` and the shards contain `updatedAt` and one entry per repository with `id`, `downloads`, and `downloadsAllTime`, sorted by lifetime downloads. Creator lookup fetches only the shard for the username's first character, so it does not download the full list.
 
 Usernames may contain letters, numbers, periods, underscores, and hyphens, up to 96 characters. The site uses public metadata only. It does not access private repositories or require credentials.
 
@@ -135,7 +135,7 @@ The homepage is a static build, but it publishes download totals and a unique-cr
 `update-snapshot.mjs` fetches Hugging Face directly and writes the published data in one pass:
 
 - `public/data/stats.json` for the global totals
-- `public/data/models.json` for the creator lookup
+- `public/data/models.json` and the `public/data/models/` shards for the creator lookup
 - `index.html`, inside `<!-- snapshot:* -->` marker pairs, so the served HTML carries the same numbers
 - `src/main.js`, between the `// snapshot:start` and `// snapshot:end` markers, as the client fallback
 - `public/sitemap.xml`, so its `lastmod` matches the snapshot

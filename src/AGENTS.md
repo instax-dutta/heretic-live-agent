@@ -8,7 +8,7 @@ The browser application. One page, one render function, one state object, one st
 
 - Owns everything the visitor sees and does: markup, copy, view states, transitions, and the stylesheet
 - Owns no data transformation logic. Aggregation and creator filtering live in `shared/stats-core.js`; figure copy and username rules live in `shared/`
-- Consumes the `data/stats.json` and `data/models.json` shapes and must stay in sync with `update-snapshot.mjs`
+- Consumes the `data/stats.json` and `data/models/<key>.json` shapes and must stay in sync with `update-snapshot.mjs`
 
 ## Local Contracts
 
@@ -30,7 +30,7 @@ The browser application. One page, one render function, one state object, one st
 ### Data loading
 
 - The global view fetches `data/stats.json` with `cache: "no-cache"`
-- Creator lookup lazily fetches `data/models.json` once per page and filters it with `filterCreatorModels`. There is no server call
+- Creator lookup lazily fetches the shard for the username's first character from `data/models/<key>.json` once per page and filters it with `filterCreatorModels`. There is no server call
 - A failed model fetch resets the cached promise so the retry button can try again
 - The data files are committed by `update-snapshot.mjs`; the browser never talks to Hugging Face directly
 

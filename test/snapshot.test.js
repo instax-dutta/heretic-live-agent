@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -85,6 +85,21 @@ test("the published data files agree with the inline snapshot", () => {
   }
 });
 
+test("the creator shards cover the full model list exactly once", () => {
+  const dir = resolve(ROOT, "public/data/models");
+  const files = readdirSync(dir).filter((name) => name.endsWith(".json"));
+  const shardModels = files.flatMap(
+    (name) => JSON.parse(readFileSync(resolve(dir, name), "utf8")).models,
+  );
+
+  assert.equal(shardModels.length, modelData.models.length);
+  const expected = new Set(modelData.models.map((model) => model.id));
+  for (const model of shardModels) {
+    assert.ok(expected.delete(model.id), `unexpected shard model ${model.id}`);
+  }
+  assert.equal(expected.size, 0, "every model must appear in exactly one shard");
+});
+
 test("the published recent-share matches the published figures", () => {
   const [, lifetime, d30] = js
     .match(/const fallback = \{ modelCount: \d+, creatorCount: \d+, allTimeDownloads: (\d+), last30DaysDownloads: (\d+) \};/)
@@ -133,8 +148,10 @@ test("the refresh workflow stages every file the updater writes", () => {
   const staged = workflow.match(/git add ([^\n]+)/)?.[1].split(/\s+/) ?? [];
 
   assert.ok(written.length >= 5, "expected the updater to write at least five files");
+  const covered = (file) => staged.includes(file)
+    || staged.some((entry) => file.startsWith(`${entry.replace(/\/$/, "")}/`));
   for (const file of written) {
-    assert.ok(staged.includes(file), `update-snapshot.mjs writes ${file} but the workflow does not stage it`);
+    assert.ok(covered(file), `update-snapshot.mjs writes ${file} but the workflow does not stage it`);
   }
 });
 

@@ -18,7 +18,7 @@ The regression suite. Node's built-in runner over every behavior worth breaking.
 - Test names state the behavior, not the function. `respects the 100 page ceiling` reads better in a failure than `fetchAllModels throws`
 - Covered today: cursor pagination, the pagination ceiling, expansion parameter merging, tag-plus-name deduplication and ranking, aggregate totals, unique-creator counting, creator filtering, 30-day rate estimation, figure scope labels, username normalization and validation, stale-request protection, and data file agreement
 - The scope-safety test asserts no field stays identical to the global copy, not merely that the username appears somewhere. A weakened disjunction here is how a creator total silently becomes a global claim
-- `snapshot.test.js` guards the published figures rather than logic: `public/data/stats.json`, `public/data/models.json`, the static HTML, and the client fallback must agree, the derived share must match, and the snapshot must carry a date and be within tolerance
+- `snapshot.test.js` guards the published figures rather than logic: `public/data/stats.json`, `public/data/models.json`, the creator shards, the static HTML, and the client fallback must agree, the derived share must match, and the snapshot must carry a date and be within tolerance
 - The age tolerance in `snapshot.test.js` is the alarm for dead automation. Raise it only alongside the schedule in `.github/AGENTS.md`, never to silence a failure
 
 ## Work Guidance

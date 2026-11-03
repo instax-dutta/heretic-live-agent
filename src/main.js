@@ -319,22 +319,28 @@ function renderUser(models, username, maxDownloads) {
   </section>`;
 }
 
-let modelsPromise = null;
+const modelShardPromises = new Map();
 
-function loadModels() {
-  if (!modelsPromise) {
-    modelsPromise = fetch("data/models.json", { cache: "no-cache" })
+function modelShardKey(username) {
+  const first = String(username || "").replace(/^@/, "").charAt(0).toLowerCase();
+  return /^[a-z0-9]$/.test(first) ? first : "_";
+}
+
+function loadModels(username) {
+  const path = `data/models/${modelShardKey(username)}.json`;
+  if (!modelShardPromises.has(path)) {
+    modelShardPromises.set(path, fetch(path, { cache: "no-cache" })
       .then((response) => {
         if (!response.ok) throw new Error("The published model list is unavailable.");
         return response.json();
       })
       .then((payload) => (Array.isArray(payload?.models) ? payload.models : []))
       .catch((error) => {
-        modelsPromise = null;
+        modelShardPromises.delete(path);
         throw error;
-      });
+      }));
   }
-  return modelsPromise;
+  return modelShardPromises.get(path);
 }
 
 async function loadStats() {
@@ -353,7 +359,7 @@ async function fetchStats(username) {
   try {
     const [stats, allModels] = await Promise.all([
       loadStats(),
-      username ? loadModels() : Promise.resolve(null),
+      username ? loadModels(username) : Promise.resolve(null),
     ]);
     if (!requestGate.isCurrent(requestId)) return;
 
