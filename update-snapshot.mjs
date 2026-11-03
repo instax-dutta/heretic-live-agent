@@ -6,7 +6,8 @@
  * Hugging Face work ahead of time. It writes:
  *
  *   public/data/stats.json   global totals for the page and machine readers
- *   public/data/models.json  the deduplicated model list used for creator lookup
+ *   public/data/models.json  the complete deduplicated model list for machines
+ *   public/data/models/*.json  one shard per first character for creator lookup
  *   index.html               the crawlable figures behind snapshot markers
  *   src/main.js              the client fallback used when data files fail
  *   public/sitemap.xml       the honest lastmod for the page
@@ -158,6 +159,23 @@ const stats = {
 const statsJson = `${JSON.stringify(stats, null, 2)}\n`;
 const modelsJson = `${JSON.stringify({ updatedAt: iso, models: publicModels })}\n`;
 
+// Creator lookup only needs the models whose namespace starts with the same
+// character as the username. Shards keep that request small; models.json stays
+// as the complete machine-readable list.
+const SHARD_KEYS = [..."abcdefghijklmnopqrstuvwxyz0123456789", "_"];
+const shards = new Map(SHARD_KEYS.map((key) => [key, []]));
+for (const model of publicModels) {
+  const first = String(model.id || "").charAt(0).toLowerCase();
+  const key = shards.has(first) ? first : "_";
+  shards.get(key).push(model);
+}
+const shardFiles = new Map(
+  [...shards].map(([key, shardModels]) => [
+    `public/data/models/${key}.json`,
+    `${JSON.stringify({ updatedAt: iso, models: shardModels })}\n`,
+  ]),
+);
+
 const htmlBefore = read("index.html");
 const jsBefore = read("src/main.js");
 const sitemapBefore = read("public/sitemap.xml");
@@ -200,11 +218,17 @@ const sitemap = replaceMarkedRegion(
   [`<lastmod>${iso.slice(0, 19)}Z</lastmod>`],
 );
 
+let shardsChanged = false;
+for (const [rel, content] of shardFiles) {
+  if (readIfExists(rel) !== content) { shardsChanged = true; break; }
+}
+
 const changed = html !== htmlBefore
   || js !== jsBefore
   || sitemap !== sitemapBefore
   || statsJson !== statsBefore
-  || modelsJson !== modelsBefore;
+  || modelsJson !== modelsBefore
+  || shardsChanged;
 
 if (DRY_RUN) {
   console.log("update-snapshot: dry run, no files written");
@@ -223,9 +247,10 @@ if (!changed) {
   process.exit(0);
 }
 
-mkdirSync(resolve(ROOT, "public/data"), { recursive: true });
+mkdirSync(resolve(ROOT, "public/data/models"), { recursive: true });
 writeFileSync(resolve(ROOT, "public/data/stats.json"), statsJson);
 writeFileSync(resolve(ROOT, "public/data/models.json"), modelsJson);
+for (const [rel, content] of shardFiles) writeFileSync(resolve(ROOT, rel), content);
 writeFileSync(resolve(ROOT, "index.html"), html);
 writeFileSync(resolve(ROOT, "src/main.js"), js);
 writeFileSync(resolve(ROOT, "public/sitemap.xml"), sitemap);
