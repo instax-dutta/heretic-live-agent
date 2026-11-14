@@ -88,6 +88,7 @@ Heretic Live is a single-page public observability interface for the Heretic mod
 - The static HTML and the two data files publish figures a crawler reads without JavaScript. Those figures are machine-owned: edit them through `update-snapshot.mjs`, never by hand. `test/snapshot.test.js` fails if the copies disagree or the snapshot goes stale.
 - Keep keyboard navigation, visible focus, responsive layout, and `prefers-reduced-motion` behavior working on every change.
 - The dependency list is deliberately tiny (`vite`, `lenis`). Do not add a dependency without a stated need.
+- Cloudflare Web Analytics is the only third-party runtime request. It is cookieless, dashboard-only, and its token in `index.html` is a public site identifier, not a secret. Never render visitor counts in the UI: the no-telemetry rules still apply.
 - Never commit `.env` files, credentials, or private Hugging Face data.
 
 ### Top-level layout

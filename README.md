@@ -157,6 +157,12 @@ Two guards back this up:
 
 Every published figure is dated in the markup, so a snapshot that does go stale reads as dated, not current.
 
+## Analytics
+
+The site loads Cloudflare Web Analytics from `index.html`. It is cookieless, sets no client-side state, and does not fingerprint visitors. The dashboard is private to the Cloudflare account and no visitor figure is published on the site.
+
+The token in `index.html` is a public site identifier, not a secret. Data appears in the dashboard within a few hours of the first request. Ad blockers can block the beacon, so the reported count is a floor rather than a census.
+
 ## Repository hygiene
 
 The repository excludes generated dependencies and build output from version control. Do not commit `.env` files, credentials, or private Hugging Face data.
