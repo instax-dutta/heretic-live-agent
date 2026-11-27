@@ -2,13 +2,13 @@
   "ok": true,
   "scope": "global",
   "username": null,
-  "updatedAt": "2026-11-27T08:35:50.070Z",
+  "updatedAt": "2026-11-27T21:17:31.044Z",
   "totals": {
-    "modelCount": 9757,
-    "allTimeDownloads": 108439684,
-    "last30DaysDownloads": 22727717,
-    "creatorCount": 2152,
-    "meanLifetimeDownloads": 11114
+    "modelCount": 9796,
+    "allTimeDownloads": 110208637,
+    "last30DaysDownloads": 23575275,
+    "creatorCount": 2162,
+    "meanLifetimeDownloads": 11250
   },
   "source": "Hugging Face Hub API · heretic tag + name search"
 }
